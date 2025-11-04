@@ -17,8 +17,7 @@ export default function App() {
   const { isAuthenticated, user, logout } = useAuth();
 
   return (
-    <div className="space-y-6 p-4">
-      {/* Navigation */}
+    <div className="space-y-6">
       <Header />
 
       {/* Screen rendering */}

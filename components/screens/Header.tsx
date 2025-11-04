@@ -2,6 +2,8 @@
 
 import { cn } from "@/lib/utils"
 
+import { HeaderDropdownMenu } from "./HeaderDropdownMenu";
+
 export default function Header() {
   return (
     <header
@@ -9,7 +11,7 @@ export default function Header() {
         "flex items-center justify-between",
         "bg-sky-700 text-white", // change to your brand bg
         "p-4 shadow-sm",
-        "fixed top-0 left-0 w-full z-50"
+        "top-0 left-0 w-full z-50"
       )}
     >
       <h1 className="text-xl font-bold w-3/4">
@@ -18,6 +20,7 @@ export default function Header() {
           Edvance: <i>Empowering All to Thrive</i>
         </span>
       </h1>
+      <HeaderDropdownMenu />
     </header>
   );
 }
