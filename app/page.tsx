@@ -3,6 +3,8 @@
 import { useState } from "react";
 
 import { useAuth } from "@/context/AuthContext";
+
+import Header from "@/components/screens/header";
 import LoginView from "@/components/screens/LoginView";
 import HomeView from "@/components/screens/HomeView";
 import DashboardView from "@/components/screens/DashboardView";
@@ -17,17 +19,7 @@ export default function App() {
   return (
     <div className="space-y-6 p-4">
       {/* Navigation */}
-      {/* <nav className="flex gap3">
-        <button onClick={() => setScreen("home")} className="border rounded px-3 py-2">
-          Home
-        </button>
-        <button onClick={() => setScreen("dashboard")} className="border rounded px-3 py-2">
-          Dashboard
-        </button>
-        <button onClick={() => setScreen("settings")} className="border rounded px-3 py-2">
-          Settings
-        </button>
-      </nav> */}
+      <Header />
 
       {/* Screen rendering */}
       {screen === "home" && <HomeView setScreen={setScreen} />}
