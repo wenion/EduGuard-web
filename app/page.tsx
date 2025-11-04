@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import { useAuth } from "@/context/AuthContext";
 
-import Header from "@/components/screens/header";
+import Header from "@/components/screens/Header";
 import LoginView from "@/components/screens/LoginView";
 import HomeView from "@/components/screens/HomeView";
 import DashboardView from "@/components/screens/DashboardView";
