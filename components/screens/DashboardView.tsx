@@ -1,7 +1,26 @@
-// components/screens/DashboardView.tsx
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 import { useAuth } from "@/context/AuthContext";
 import { fetchUserProfile } from "@/lib/authApi";
@@ -48,62 +67,37 @@ export default function DashboardView({
   }
 
   return (
-    <section className="panel-section dashboard">
-      <h2>Unit Selection</h2>
-
-      <div className="content-area">
-        <div className="table-responsive">
-          <table className="table table-hover">
-            <thead className="table-light">
-              <tr>
-                <th>Unit Code</th>
-                <th>Unit Name</th>
-                <th>Semester</th>
-              </tr>
-            </thead>
-
-            <tbody id="unitList">
-              {units.length === 0 && (
-                <tr>
-                  <td colSpan={3} className="text-muted">
-                    No enrolled units found.
-                  </td>
-                </tr>
-              )}
-
-              {units.map((u) => {
-                const active = u.unit_id === selectedId;
-                return (
-                  <tr
-                    key={u.unit_id}
-                    data-unit-id={u.unit_id}
-                    className={`unit-select ${active ? "table-active" : ""}`}
-                    style={{ cursor: "pointer" }}
-                    onClick={() => selectUnit(u)}
-                  >
-                    <td>{u.unit_code}</td>
-                    <td>{u.unit_name}</td>
-                    <td>{u.semester}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="d-flex justify-content-end align-items-center">
-          <button
-            className="btn activity-btn hover-border-btn"
-            id="all-unit-btn"
-            type="button"
-            onClick={backAll}
-          >
-            <span>Back to all units</span>
-            {/* Requires bootstrap-icons CSS loaded globally */}
-            <i className="bi bi-arrow-return-left" />
-          </button>
-        </div>
-      </div>
-    </section>
+    <Card>
+      <CardHeader>
+        <CardTitle>Unit Selection</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Unit Code</TableHead>
+              <TableHead>Unit Name</TableHead>
+              <TableHead>Semester</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {units.map((unit) => (
+              <TableRow
+                className="cursor-pointer"
+                key={unit.unit_id}
+                data-state={selectedId === unit.unit_id && "selected"}
+              >
+                <TableCell>{unit.unit_code}</TableCell>
+                <TableCell>{unit.unit_name}</TableCell>
+                <TableCell>{unit.semester}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+      <CardFooter className="justify-end">
+        <CardAction onClick={backAll}>Back to all units</CardAction>
+      </CardFooter>
+    </Card>
   );
 }
