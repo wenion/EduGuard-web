@@ -12,6 +12,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Table,
   TableBody,
   TableCaption,
@@ -24,6 +33,7 @@ import {
 
 import { useAuth } from "@/context/AuthContext";
 import { fetchUserProfile } from "@/lib/authApi";
+import { Separator } from "@radix-ui/react-separator";
 
 type Unit = {
   unit_id: number;
@@ -67,37 +77,70 @@ export default function DashboardView({
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Unit Selection</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Unit Code</TableHead>
-              <TableHead>Unit Name</TableHead>
-              <TableHead>Semester</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {units.map((unit) => (
-              <TableRow
-                className="cursor-pointer"
-                key={unit.unit_id}
-                data-state={selectedId === unit.unit_id && "selected"}
-              >
-                <TableCell>{unit.unit_code}</TableCell>
-                <TableCell>{unit.unit_name}</TableCell>
-                <TableCell>{unit.semester}</TableCell>
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle>Unit Selection</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Unit Code</TableHead>
+                <TableHead>Unit Name</TableHead>
+                <TableHead>Semester</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </CardContent>
-      <CardFooter className="justify-end">
-        <CardAction onClick={backAll}>Back to all units</CardAction>
-      </CardFooter>
-    </Card>
+            </TableHeader>
+            <TableBody>
+              {units.map((unit) => (
+                <TableRow
+                  className="cursor-pointer"
+                  key={unit.unit_id}
+                  data-state={selectedId === unit.unit_id && "selected"}
+                  onClick={(e)=> {console.log("click")}}
+                >
+                  <TableCell>{unit.unit_code}</TableCell>
+                  <TableCell>{unit.unit_name}</TableCell>
+                  <TableCell>{unit.semester}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+        <CardFooter className="justify-end">
+          <CardAction onClick={backAll}>Back to all units</CardAction>
+        </CardFooter>
+      </Card>
+
+      <h4 className="text-sm leading-none font-medium">Learning Progress Insights</h4>
+      <Separator className="my-4" />
+      <Card>
+        <CardHeader>
+          <CardTitle>Your overall time engagement in this unit (measured by minutes)</CardTitle>
+        </CardHeader>
+        <CardContent>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Your time engagement with course materials from a specific week (measured by minutes)</CardTitle>
+        </CardHeader>
+        <CardContent>
+        </CardContent>
+        <CardFooter className="justify-center">
+          <Select>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select item" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectItem value="apple">item</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </CardFooter>
+      </Card>
+    </>
   );
 }
