@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+
+import { useAuth } from "@/context/AuthContext";
+import LoginView from "@/components/screens/LoginView";
 import HomeView from "@/components/screens/HomeView";
 import DashboardView from "@/components/screens/DashboardView";
 import SettingsView from "@/components/screens/SettingsView";
@@ -8,12 +11,13 @@ import SettingsView from "@/components/screens/SettingsView";
 type Screen = "home" | "dashboard" | "settings";
 
 export default function App() {
-  const [screen, setScreen] = useState<Screen>("home");
+  const [screen, setScreen] = useState<Screen>("dashboard");
+  const { isAuthenticated, user, logout } = useAuth();
 
   return (
     <div className="space-y-6 p-4">
       {/* Navigation */}
-      <nav className="flex gap-3">
+      {/* <nav className="flex gap3">
         <button onClick={() => setScreen("home")} className="border rounded px-3 py-2">
           Home
         </button>
@@ -23,11 +27,12 @@ export default function App() {
         <button onClick={() => setScreen("settings")} className="border rounded px-3 py-2">
           Settings
         </button>
-      </nav>
+      </nav> */}
 
       {/* Screen rendering */}
       {screen === "home" && <HomeView setScreen={setScreen} />}
-      {screen === "dashboard" && <DashboardView />}
+      {screen === "dashboard" &&
+        isAuthenticated ? <DashboardView /> : <LoginView />}
       {screen === "settings" && <SettingsView />}
     </div>
   );
