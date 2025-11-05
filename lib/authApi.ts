@@ -36,3 +36,24 @@ export async function fetchUserProfile(authorizedFetch: any) {
 
   return res.json();
 }
+
+// Helper function to fetch user feedback with authorization token
+export async function fetchUserFeedback(authorizedFetch: any, unitId: number) {
+  const res = await authorizedFetch(
+    `${process.env.NEXT_PUBLIC_API_BASE}/user/feedback`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+      body: JSON.stringify({ unit: unitId }), // Payload with unit ID
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error(`Failed to submit feedback (HTTP ${res.status})`);
+  }
+
+  return res.json();  // Return the response as JSON
+}

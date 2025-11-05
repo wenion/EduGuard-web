@@ -32,8 +32,10 @@ import {
 } from "@/components/ui/table";
 
 import { useAuth } from "@/context/AuthContext";
-import { fetchUserProfile } from "@/lib/authApi";
+import { FeedbackSet } from "@/types/feedback";
+import { fetchUserProfile, fetchUserFeedback } from "@/lib/authApi";
 import { Separator } from "@radix-ui/react-separator";
+import { FeedbackPanel } from "@/components/screens/FeedbackPanel";
 
 type Unit = {
   unit_id: number;
@@ -71,6 +73,22 @@ export default function DashboardView({
     onUnitSelect?.(null);
     onBackAllUnits?.();
   };
+
+  const [data, setData] = useState<FeedbackSet>({ feedback_set: [] });
+
+  const load = async () => {
+    try {
+      const res = await fetchUserFeedback(authorizedFetch, 4);
+      const feedbackArr: FeedbackSet = res;
+      setData(feedbackArr);
+    } catch (e: any) {
+      console.error("Failed to load feedback data:", e);
+    }
+  };
+
+  useEffect(() => {
+    load();
+  }, []); // Load once on mount
 
   if (!isAuthenticated) {
     return <p className="text-muted">Please sign in to view your units.</p>;
@@ -140,6 +158,21 @@ export default function DashboardView({
             </SelectContent>
           </Select>
         </CardFooter>
+      </Card>
+
+      <h4
+        className="text-sm leading-none font-medium"
+      >
+        How You Can Learn Better?
+      </h4>
+      <Separator className="my-4" />
+      <Card>
+        <CardHeader>
+          <CardTitle>How you should improve?</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <FeedbackPanel feedbackSet={data} />
+        </CardContent>
       </Card>
     </>
   );
