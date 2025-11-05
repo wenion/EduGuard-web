@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/table";
 
 import { useAuth } from "@/context/AuthContext";
-import { FeedbackSet } from "@/types/feedback";
+import { FeedbackSet } from "@/types/Feedback";
 import { fetchUserProfile, fetchUserFeedback } from "@/lib/authApi";
 import { Separator } from "@radix-ui/react-separator";
 import { FeedbackPanel } from "@/components/screens/FeedbackPanel";

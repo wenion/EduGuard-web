@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/item";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-import { Feedback, FeedbackSet } from "@/types/feedback"; // Import type for feedback
+import { Feedback, FeedbackSet } from "@/types/Feedback"; // Import type for feedback
 
 function FeedbackCard({
   feedback,

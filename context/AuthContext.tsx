@@ -1,6 +1,6 @@
 "use client";
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
-import type { LoginResponse } from "@/types/auth";
+import type { LoginResponse } from "@/types/Auth";
 import { loginRequest, logoutRequest } from "@/lib/authApi";
 
 type AuthState = {
