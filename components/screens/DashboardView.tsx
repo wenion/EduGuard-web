@@ -166,14 +166,7 @@ export default function DashboardView({
         How You Can Learn Better?
       </h4>
       <Separator className="my-4" />
-      <Card>
-        <CardHeader>
-          <CardTitle>How you should improve?</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <FeedbackPanel feedbackSet={data} />
-        </CardContent>
-      </Card>
+      <FeedbackPanel feedbackSet={data} />
     </>
   );
 }
