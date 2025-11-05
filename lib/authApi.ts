@@ -24,6 +24,29 @@ export async function loginRequest(username: string, password: string): Promise<
   return res.json() as Promise<LoginResponse>;
 }
 
+export async function logoutRequest(token: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/auth/logout`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    body: null // or body: "" — backend expects empty body
+  });
+
+  if (!res.ok) {
+    let msg = `Logout failed (HTTP ${res.status})`;
+    try {
+      const j = await res.json();
+      msg = j?.message || msg;
+    } catch {/* ignore */}
+    throw new Error(msg);
+  }
+
+  return; // nothing returned on success
+}
+
 export async function fetchUserProfile(authorizedFetch: any) {
   const res = await authorizedFetch(
     `${process.env.NEXT_PUBLIC_API_BASE}/user/find_user`,

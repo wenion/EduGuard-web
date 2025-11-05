@@ -4,6 +4,8 @@ import { useState } from "react";
 
 import { User as UserIcon } from 'lucide-react';
 
+import { useAuth } from "@/context/AuthContext";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +18,8 @@ import { Switch } from "@/components/ui/switch"
 
 
 export function HeaderDropdownMenu() {
+  const { logout } = useAuth();
+
   const [compare, setCompare] = useState(false);
 
   return (
@@ -43,7 +47,7 @@ export function HeaderDropdownMenu() {
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem>Refresh Data</DropdownMenuItem>
-        <DropdownMenuItem>Log Out</DropdownMenuItem>
+        <DropdownMenuItem onClick={logout}>Log Out</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )

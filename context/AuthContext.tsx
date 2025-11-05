@@ -1,7 +1,7 @@
 "use client";
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { LoginResponse } from "@/types/auth";
-import { loginRequest } from "@/lib/authApi";
+import { loginRequest, logoutRequest } from "@/lib/authApi";
 
 type AuthState = {
   token: string | null;
@@ -117,6 +117,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const logout = async () => {
+    try {
+      await logoutRequest(token!);
+      // Handle successful logout (e.g., redirect to login page)
+      localStorage.removeItem(STORAGE_KEY);
+      doLogout();
+    } catch (error) {
+      console.error("Logout failed:", error);
+      // Handle error (e.g., show notification)
+    }
+  };
+
   const authorizedFetch = async (input: RequestInfo | URL, init?: RequestInit) => {
     if (!token || !expiresAt || Date.now() >= expiresAt) {
       // expired or missing → behave like 401
@@ -148,7 +160,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loading,
     error: error,
     login,
-    logout: doLogout,
+    logout,
     authorizedFetch,
   }), [token, user, genaiAccess, expiresAt, loading, error]);
 
