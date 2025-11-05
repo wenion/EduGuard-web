@@ -80,3 +80,28 @@ export async function fetchUserFeedback(authorizedFetch: any, unitId: number) {
 
   return res.json();  // Return the response as JSON
 }
+
+export async function fetchActionPlanRequest(authorizedFetch: any, unitId: number) {
+  const res = await authorizedFetch(
+    `${process.env.NEXT_PUBLIC_API_BASE}/user/get_action_plan`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+      body: JSON.stringify({ unit: unitId }),
+    }
+  );
+
+  if (!res.ok) {
+    let msg = `Get action plan failed (HTTP ${res.status})`;
+    try {
+      const j = await res.json();
+      msg = j?.message || msg;
+    } catch {/* ignore */}
+    throw new Error(msg);
+  }
+
+  return res.json();
+}

@@ -37,6 +37,7 @@ import { fetchUserProfile, fetchUserFeedback } from "@/lib/authApi";
 import { Separator } from "@radix-ui/react-separator";
 import { FeedbackPanel } from "@/components/screens/FeedbackPanel";
 import { PlanerPanel } from "@/components/screens/PlanerPanel";
+import { ProgressPanel } from "@/components/screens/ProgressPanel";
 
 type Unit = {
   unit_id: number;
@@ -169,6 +170,7 @@ export default function DashboardView({
       <Separator className="my-4" />
       <FeedbackPanel feedbackSet={data} />
       <PlanerPanel />
+      <ProgressPanel />
     </>
   );
 }
