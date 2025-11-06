@@ -1,10 +1,6 @@
 "use client";
 
-import { useState } from "react";
-
-import { User as UserIcon } from 'lucide-react';
-
-import { useAuth } from "@/context/AuthContext";
+import { useEffect, useState } from "react";
 
 import {
   DropdownMenu,
@@ -15,12 +11,25 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Switch } from "@/components/ui/switch"
+import { User as UserIcon } from 'lucide-react';
+
+import { useAuth } from "@/context/AuthContext";
 
 
 export function HeaderDropdownMenu() {
-  const { logout } = useAuth();
+  const { logout, user, switchShowPeerRequest } = useAuth();
 
   const [compare, setCompare] = useState(false);
+  useEffect(() => {
+    if (user) {
+      setCompare(user?.compareWithPeer);
+    }
+  }, [user]);
+
+  const setShowPeer = async (value: boolean) => {
+    switchShowPeerRequest(value);
+    setCompare(value);
+  };
 
   return (
     <DropdownMenu>
@@ -40,7 +49,7 @@ export function HeaderDropdownMenu() {
             <Switch
               id="airplane-mode"
               checked={compare}
-              onCheckedChange={setCompare}
+              onCheckedChange={() => setShowPeer(!compare)}
               className="ml-auto"
             />
           </DropdownMenuItem>

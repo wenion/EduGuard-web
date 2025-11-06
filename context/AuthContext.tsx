@@ -1,7 +1,7 @@
 "use client";
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { LoginResponse } from "@/types/Auth";
-import { loginRequest, logoutRequest } from "@/lib/authApi";
+import { loginRequest, logoutRequest, setShowPeerRequest } from "@/lib/authApi";
 
 type AuthState = {
   token: string | null;
@@ -14,6 +14,7 @@ type AuthState = {
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
   authorizedFetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+  switchShowPeerRequest: (value: boolean) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -33,6 +34,16 @@ function writeStored(data: Partial<LoginResponse> | null) {
     if (!data) localStorage.removeItem(STORAGE_KEY);
     else localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   } catch { /* ignore */ }
+}
+
+function updateStored(updates: Partial<LoginResponse>) {
+  try {
+    const existing = readStored() || {};
+    const updated = { ...existing, ...updates };
+    writeStored(updated);
+  } catch {
+    /* ignore */
+  }
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -151,6 +162,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return res;
   };
 
+  const switchShowPeerRequest = async (value: boolean) => {
+    try {
+      const res = await setShowPeerRequest(authorizedFetch, value);
+      const data = readStored();
+      if (data && data.user) {
+        const user = data.user;
+        user.compareWithPeer = value;
+        updateStored({ user: user });
+      }
+    } catch (e: any) {
+      console.error("Failed to load action plan data:", e);
+    }
+  };
+
   const value = useMemo<AuthState>(() => ({
     token,
     user,
@@ -162,6 +187,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     login,
     logout,
     authorizedFetch,
+    switchShowPeerRequest,
   }), [token, user, genaiAccess, expiresAt, loading, error]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

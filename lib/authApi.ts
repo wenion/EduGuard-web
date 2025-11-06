@@ -105,3 +105,29 @@ export async function fetchActionPlanRequest(authorizedFetch: any, unitId: numbe
 
   return res.json();
 }
+
+export async function setShowPeerRequest(
+  authorizedFetch: any,
+  show_peer: boolean
+): Promise<void> {
+  const res = await authorizedFetch(`${API_BASE}/user/set_show_peer`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+    },
+    body: JSON.stringify({ show_peer: show_peer }),
+  });
+
+  if (!res.ok) {
+    let msg = `Failed to update peer compare setting (HTTP ${res.status})`;
+    try {
+      const j = await res.json();
+      msg = j?.message || msg;
+    } catch {
+      /* ignore */
+    }
+    throw new Error(msg);
+  }
+  return res.json();
+}
