@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Table,
   TableBody,
@@ -139,45 +140,46 @@ export default function DashboardView({
 
       {selectedUnitId && (
         <>
-          <h4 className="text-sm leading-none font-medium">Learning Progress Insights</h4>
-            <Separator className="my-4" />
-            <Card>
-              <CardHeader>
-                <CardTitle>Your overall time engagement in this unit (measured by minutes)</CardTitle>
-              </CardHeader>
-              <CardContent>
-              </CardContent>
-            </Card>
+          <Tabs defaultValue="account" className="w-full">
+            <TabsList className="flex m-auto">
+              <TabsTrigger value="insight">Learning Progress Insights</TabsTrigger>
+              <TabsTrigger value="planner">How You Can Learn Better?</TabsTrigger>
+            </TabsList>
+            <TabsContent value="insight">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Your overall time engagement in this unit (measured by minutes)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Your time engagement with course materials from a specific week (measured by minutes)</CardTitle>
-              </CardHeader>
-              <CardContent>
-              </CardContent>
-              <CardFooter className="justify-center">
-                <Select>
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Select item" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectItem value="apple">item</SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              </CardFooter>
-            </Card>
-
-            <h4
-              className="text-sm leading-none font-medium"
-            >
-              How You Can Learn Better?
-            </h4>
-            <Separator className="my-4" />
-            <FeedbackPanel feedbackSet={data} />
-            <PlanerPanel />
-            <ProgressPanel />
+              <Card>
+                <CardHeader>
+                  <CardTitle>Your time engagement with course materials from a specific week (measured by minutes)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                </CardContent>
+                <CardFooter className="justify-center">
+                  <Select>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Select item" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value="apple">item</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </CardFooter>
+              </Card>
+            </TabsContent>
+            <TabsContent value="planner">
+              <FeedbackPanel feedbackSet={data} />
+              <PlanerPanel />
+              <ProgressPanel />
+            </TabsContent>
+          </Tabs>
         </>
       )}
     </>
