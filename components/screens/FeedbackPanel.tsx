@@ -23,6 +23,15 @@ function FeedbackCard({
   onPrevious: () => void,
   onNext: () => void,
 }) {
+  const currentWeek = useMemo(() => feedback.cur_week, [feedback]);
+  const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggingIndex(index);
+
+    e.dataTransfer.setData("text/plain", feedback.actionable_advice[index]);
+    e.dataTransfer.effectAllowed = "move";
+  };
   return (
     <div className="space-y-6">
       <Card className="w-full">
@@ -36,28 +45,41 @@ function FeedbackCard({
 
           <p className="text-base text-muted-foreground mt-2">
             <em>
-            To better achieve the learning outcomes for Weeks 0 - 2, here are some suggestions that you may find helpful:
+            To better achieve the learning outcomes for Weeks 0 - {currentWeek}, here are some suggestions that you may find helpful:
             </em>
           </p>
 
           <ScrollArea className="h-72 rounded-md border flex mt-4">
-            <div className="flex w-full max-w-md flex-col gap-4 mt-2 px-2">
-              {feedback.actionable_advice.map((advice, index) => (
-                <Item variant="outline" key={index} className="flex items-center justify-between border" >
-                  <span>{advice}</span>
-                </Item>
-              ))}
+            <div className="flex w-full flex-col gap-4 my-2 px-2">
+              {feedback.actionable_advice.map((advice, index) => {
+                const isDragging = draggingIndex === index;
+                return (
+                  <Item
+                    draggable
+                    variant="outline"
+                    key={index}
+                    className={[
+                      "flex items-center justify-between border",
+                      "hover:bg-slate-50",
+                      isDragging ? "cursor-grabbing opacity-80" : "",
+                    ].join(" ")}
+                    onDragStart={(e) => handleDragStart(e, index)}
+                  >
+                    <span>{advice}</span>
+                  </Item>
+                );
+              })}
             </div>
           </ScrollArea>
 
           <p className="text-base text-muted-foreground mt-4">
             <em>
-              To support your achievement of the learning outcomes for Week 3, here are some suggestions:
+              To support your achievement of the learning outcomes for Week {currentWeek + 1}, here are some suggestions:
             </em>
           </p>
 
           <ScrollArea className="h-72 rounded-md border flex mt-4">
-            <div className="flex w-full max-w-md flex-col gap-4 mt-2 px-2">
+            <div className="flex w-full flex-col gap-4 my-2 px-2">
               {feedback.feedforward_actions.map((action, index) => (
                 <Item variant="outline" key={index} className="flex items-center justify-between">
                   <span>{action}</span>
