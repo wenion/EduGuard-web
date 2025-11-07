@@ -26,10 +26,14 @@ function FeedbackCard({
   const currentWeek = useMemo(() => feedback.cur_week, [feedback]);
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
 
-  const handleDragStart = (e: React.DragEvent, index: number) => {
+  const handleDragStart = (
+    e: React.DragEvent,
+    index: number,
+    data: string[],
+  ) => {
     setDraggingIndex(index);
 
-    e.dataTransfer.setData("text/plain", feedback.actionable_advice[index]);
+    e.dataTransfer.setData("text/plain", data[index]);
     e.dataTransfer.effectAllowed = "move";
   };
   return (
@@ -61,9 +65,10 @@ function FeedbackCard({
                     className={[
                       "flex items-center justify-between border",
                       "hover:bg-slate-50",
-                      isDragging ? "cursor-grabbing opacity-80" : "",
+                      "cursor-grab",
+                      // isDragging ? "cursor-grabbing opacity-80" : "cursor-grab",
                     ].join(" ")}
-                    onDragStart={(e) => handleDragStart(e, index)}
+                    onDragStart={(e) => handleDragStart(e, index, feedback.actionable_advice)}
                   >
                     <span>{advice}</span>
                   </Item>
@@ -81,7 +86,13 @@ function FeedbackCard({
           <ScrollArea className="h-72 rounded-md border flex mt-4">
             <div className="flex w-full flex-col gap-4 my-2 px-2">
               {feedback.feedforward_actions.map((action, index) => (
-                <Item variant="outline" key={index} className="flex items-center justify-between">
+                <Item
+                  draggable
+                  variant="outline"
+                  key={index}
+                  className="flex items-center justify-between border cursor-grab hover:bg-slate-50"
+                  onDragStart={(e) => handleDragStart(e, index, feedback.feedforward_actions)}
+                >
                   <span>{action}</span>
                 </Item>
               ))}

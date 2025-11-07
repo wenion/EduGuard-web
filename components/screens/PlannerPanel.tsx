@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Item } from "@/components/ui/item";
+import { Textarea } from "@/components/ui/textarea"
 import {
   Tooltip,
   TooltipContent,
@@ -14,15 +15,103 @@ import {
   Check as CheckIcon,
   Pencil as PencilIcon,
   Trash2 as TrashIcon,
+  Save as SaveIcon,
 } from "lucide-react";
 
 import { DatePicker } from "@/components/date-picker";
+
+type PlannerProps = {
+  index: number;
+  content: string;
+  onDelete: (index: number) => void;
+  isLast?: boolean;
+  lastRef?: React.Ref<HTMLDivElement>;
+};
+
+function Planner({ index, content, onDelete, isLast, lastRef }: PlannerProps) {
+  const [edit, setEdit] = useState(false);
+
+  return (
+    <Item
+      variant="outline"
+      className="flex items-center justify-between border h-fit"
+      ref={isLast ? lastRef : undefined}
+    >
+      <div className="flex">
+        {edit ? (
+          <Textarea defaultValue={content}/>
+        ) : (
+          <span>{content}</span>
+        )}
+        {edit ? (
+          <div className="flex justify-center items-center px-4">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2 cursor-pointer"
+                  onClick={() => setEdit(false)}
+                >
+                  <SaveIcon className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Save</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        ) : (
+          <div className="flex flex-col">
+            <DatePicker className="min-w-30" />
+            <div className="flex justify-center gap-4 my-4">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2 cursor-pointer"
+                    onClick={() => setEdit(true)}
+                  >
+                    <PencilIcon className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Edit</p>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2 cursor-pointer"
+                    onClick={() => onDelete(index)}
+                  >
+                    <TrashIcon className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Delete</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          </div>
+        )}
+      </div>
+    </Item>
+  )
+}
 
 export function PlannerPanel() {
   const [data, setData] = useState<string[]>([]);
 
   const scrollRef = useRef<HTMLDivElement>(null); // container reference
   const lastItemRef = useRef<HTMLDivElement>(null); // last added item reference
+
+  const onDelete = (index: number) => {
+    setData((prev) => prev.filter((_, i) => i !== index));
+  }
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
@@ -96,49 +185,14 @@ export function PlannerPanel() {
                 </Item>
               ) : (
                 data.map((item, index) => (
-                  <Item
-                    variant="outline"
-                    className="flex items-center justify-between border h-fit"
+                  <Planner
                     key={index}
-                    ref={index === data.length - 1 ? lastItemRef : null}
-                  >
-                    <div className="flex">
-                      <span>{item}</span>
-                      <div className="flex flex-col">
-                        <DatePicker className="min-w-30" />
-                        <div className="flex justify-center gap-4 my-4">
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="flex items-center gap-2 cursor-pointer"
-                              >
-                                <PencilIcon className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Edit</p>
-                            </TooltipContent>
-                          </Tooltip>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="flex items-center gap-2 cursor-pointer"
-                              >
-                                <TrashIcon className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Edit</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </div>
-                      </div>
-                    </div>
-                  </Item>
+                    index={index}
+                    content={item}
+                    onDelete={(index) => onDelete(index)}
+                    isLast={index === data.length - 1}
+                    lastRef={lastItemRef}
+                  />
                 ))
               )}
             </div>
