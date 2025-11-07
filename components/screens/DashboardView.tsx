@@ -140,7 +140,7 @@ export default function DashboardView({
 
       {selectedUnitId && (
         <>
-          <Tabs defaultValue="account" className="w-full">
+          <Tabs defaultValue="insight" className="w-full pt-4">
             <TabsList className="flex m-auto">
               <TabsTrigger value="insight">Learning Progress Insights</TabsTrigger>
               <TabsTrigger value="planner">How You Can Learn Better?</TabsTrigger>
