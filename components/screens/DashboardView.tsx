@@ -38,7 +38,7 @@ import { FeedbackSet } from "@/types/Feedback";
 import { fetchUserProfile, fetchUserFeedback } from "@/lib/authApi";
 import { Separator } from "@radix-ui/react-separator";
 import { FeedbackPanel } from "@/components/screens/FeedbackPanel";
-import { PlanerPanel } from "@/components/screens/PlanerPanel";
+import { PlannerPanel } from "@/components/screens/PlannerPanel";
 import { ProgressPanel } from "@/components/screens/ProgressPanel";
 
 type Unit = {
@@ -177,7 +177,7 @@ export default function DashboardView({
             <TabsContent value="planner">
               <div className="flex">
                 <FeedbackPanel feedbackSet={data} />
-                <PlanerPanel />
+                <PlannerPanel />
                 <ProgressPanel />
               </div>
             </TabsContent>

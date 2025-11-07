@@ -5,7 +5,7 @@ import { Item } from "@/components/ui/item";
 
 import { Plus as PlusIcon, Check as CheckIcon } from "lucide-react";
 
-export function PlanerPanel() {
+export function PlannerPanel() {
   return (
     <div className="space-y-6">
       <Card>
