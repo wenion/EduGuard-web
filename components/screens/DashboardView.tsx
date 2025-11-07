@@ -175,9 +175,11 @@ export default function DashboardView({
               </Card>
             </TabsContent>
             <TabsContent value="planner">
-              <FeedbackPanel feedbackSet={data} />
-              <PlanerPanel />
-              <ProgressPanel />
+              <div className="flex">
+                <FeedbackPanel feedbackSet={data} />
+                <PlanerPanel />
+                <ProgressPanel />
+              </div>
             </TabsContent>
           </Tabs>
         </>

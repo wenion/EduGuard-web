@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import {
   Item,
   ItemActions,
@@ -9,6 +9,7 @@ import {
   ItemDescription,
   ItemTitle,
 } from "@/components/ui/item";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { Feedback, FeedbackSet } from "@/types/Feedback"; // Import type for feedback
@@ -24,30 +25,46 @@ function FeedbackCard({
 }) {
   return (
     <div className="space-y-6">
-      <Card key={feedback.id} className="w-full">
+      <Card className="w-full">
         <CardHeader>
           <CardTitle className="text-xl font-medium">How you should improve?</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-lg mb-4">{feedback.feedback}</p>
+          <CardDescription className="text-lg">
+            <em>{feedback.feedback}</em>
+          </CardDescription>
 
-          <p className="text-sm text-muted-foreground mb-2">
+          <p className="text-base text-muted-foreground mt-2">
+            <em>
             To better achieve the learning outcomes for Weeks 0 - 2, here are some suggestions that you may find helpful:
+            </em>
           </p>
-          {feedback.actionable_advice.map((advice, index) => (
-            <Item key={index} className="flex items-center justify-between">
-              <span>{advice}</span>
-            </Item>
-          ))}
 
-          <p className="text-sm text-muted-foreground mt-4">
-            To support your achievement of the learning outcomes for Week 3, here are some suggestions:
+          <ScrollArea className="h-72 rounded-md border flex mt-4">
+            <div className="flex w-full max-w-md flex-col gap-4 mt-2 px-2">
+              {feedback.actionable_advice.map((advice, index) => (
+                <Item variant="outline" key={index} className="flex items-center justify-between border" >
+                  <span>{advice}</span>
+                </Item>
+              ))}
+            </div>
+          </ScrollArea>
+
+          <p className="text-base text-muted-foreground mt-4">
+            <em>
+              To support your achievement of the learning outcomes for Week 3, here are some suggestions:
+            </em>
           </p>
-          {feedback.feedforward_actions.map((action, index) => (
-            <Item key={index} className="flex items-center justify-between">
-              <span>{action}</span>
-            </Item>
-          ))}
+
+          <ScrollArea className="h-72 rounded-md border flex mt-4">
+            <div className="flex w-full max-w-md flex-col gap-4 mt-2 px-2">
+              {feedback.feedforward_actions.map((action, index) => (
+                <Item variant="outline" key={index} className="flex items-center justify-between">
+                  <span>{action}</span>
+                </Item>
+              ))}
+            </div>
+          </ScrollArea>
         </CardContent>
         <CardFooter className="flex justify-between items-center">
           <Button
