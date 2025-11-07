@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardAction,
@@ -63,15 +64,16 @@ export default function DashboardView({
     fetchUserProfile(authorizedFetch);
   }, [authorizedFetch])
 
-  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [selectedUnitId, setSelectedUnitId] = useState<number | null>(null);
 
   const selectUnit = (u: Unit) => {
-    setSelectedId(u.unit_id);
+    setSelectedUnitId(u.unit_id);
     onUnitSelect?.(u);
+    //loadAnalyticalData
   };
 
   const backAll = () => {
-    setSelectedId(null);
+    setSelectedUnitId(null);
     onUnitSelect?.(null);
     onBackAllUnits?.();
   };
@@ -114,10 +116,11 @@ export default function DashboardView({
             <TableBody>
               {units.map((unit) => (
                 <TableRow
-                  className="cursor-pointer"
+                  className="cursor-pointer unit-select"
                   key={unit.unit_id}
-                  data-state={selectedId === unit.unit_id && "selected"}
-                  onClick={(e)=> {console.log("click")}}
+                  data-unit-id={unit.unit_id}
+                  data-state={selectedUnitId === unit.unit_id && "selected"}
+                  onClick={(e)=> {selectUnit(unit)}}
                 >
                   <TableCell>{unit.unit_code}</TableCell>
                   <TableCell>{unit.unit_name}</TableCell>
@@ -128,49 +131,55 @@ export default function DashboardView({
           </Table>
         </CardContent>
         <CardFooter className="justify-end">
-          <CardAction onClick={backAll}>Back to all units</CardAction>
+          <CardAction onClick={backAll}>
+            <Button className="cursor-pointer">Back to all units</Button>
+          </CardAction>
         </CardFooter>
       </Card>
 
-      <h4 className="text-sm leading-none font-medium">Learning Progress Insights</h4>
-      <Separator className="my-4" />
-      <Card>
-        <CardHeader>
-          <CardTitle>Your overall time engagement in this unit (measured by minutes)</CardTitle>
-        </CardHeader>
-        <CardContent>
-        </CardContent>
-      </Card>
+      {selectedUnitId && (
+        <>
+          <h4 className="text-sm leading-none font-medium">Learning Progress Insights</h4>
+            <Separator className="my-4" />
+            <Card>
+              <CardHeader>
+                <CardTitle>Your overall time engagement in this unit (measured by minutes)</CardTitle>
+              </CardHeader>
+              <CardContent>
+              </CardContent>
+            </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Your time engagement with course materials from a specific week (measured by minutes)</CardTitle>
-        </CardHeader>
-        <CardContent>
-        </CardContent>
-        <CardFooter className="justify-center">
-          <Select>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Select item" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value="apple">item</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </CardFooter>
-      </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Your time engagement with course materials from a specific week (measured by minutes)</CardTitle>
+              </CardHeader>
+              <CardContent>
+              </CardContent>
+              <CardFooter className="justify-center">
+                <Select>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Select item" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="apple">item</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </CardFooter>
+            </Card>
 
-      <h4
-        className="text-sm leading-none font-medium"
-      >
-        How You Can Learn Better?
-      </h4>
-      <Separator className="my-4" />
-      <FeedbackPanel feedbackSet={data} />
-      <PlanerPanel />
-      <ProgressPanel />
+            <h4
+              className="text-sm leading-none font-medium"
+            >
+              How You Can Learn Better?
+            </h4>
+            <Separator className="my-4" />
+            <FeedbackPanel feedbackSet={data} />
+            <PlanerPanel />
+            <ProgressPanel />
+        </>
+      )}
     </>
   );
 }
