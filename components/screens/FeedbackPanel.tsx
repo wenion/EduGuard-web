@@ -2,15 +2,8 @@ import { useCallback, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
-import {
-  Item,
-  ItemActions,
-  ItemContent,
-  ItemDescription,
-  ItemTitle,
-} from "@/components/ui/item";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, GripVertical  } from "lucide-react";
 
 import { Feedback, FeedbackSet } from "@/types/Feedback"; // Import type for feedback
 
@@ -56,22 +49,18 @@ function FeedbackCard({
           <ScrollArea className="h-72 rounded-md border flex mt-4">
             <div className="flex w-full flex-col gap-4 my-2 px-2">
               {feedback.actionable_advice.map((advice, index) => {
-                const isDragging = draggingIndex === index;
                 return (
-                  <Item
+                  <div
                     draggable
-                    variant="outline"
                     key={index}
-                    className={[
-                      "flex items-center justify-between border",
-                      "hover:bg-slate-50",
-                      "cursor-grab",
-                      // isDragging ? "cursor-grabbing opacity-80" : "cursor-grab",
-                    ].join(" ")}
+                    className="flex items-center justify-between border hover:bg-slate-50 text-sm"
                     onDragStart={(e) => handleDragStart(e, index, feedback.actionable_advice)}
                   >
-                    <span>{advice}</span>
-                  </Item>
+                    <span className="m-4">{advice}</span>
+                    <div className="min-width-40 cursor-grab m-4">
+                      <GripVertical />
+                    </div>
+                  </div>
                 );
               })}
             </div>
@@ -86,15 +75,17 @@ function FeedbackCard({
           <ScrollArea className="h-72 rounded-md border flex mt-4">
             <div className="flex w-full flex-col gap-4 my-2 px-2">
               {feedback.feedforward_actions.map((action, index) => (
-                <Item
+                <div
                   draggable
-                  variant="outline"
                   key={index}
-                  className="flex items-center justify-between border cursor-grab hover:bg-slate-50"
+                  className="flex items-center justify-between border hover:bg-slate-50 text-sm"
                   onDragStart={(e) => handleDragStart(e, index, feedback.feedforward_actions)}
                 >
-                  <span>{action}</span>
-                </Item>
+                  <span className="m-4">{action}</span>
+                  <div className="min-width-40 cursor-grab m-4">
+                    <GripVertical />
+                  </div>
+                </div>
               ))}
             </div>
           </ScrollArea>
