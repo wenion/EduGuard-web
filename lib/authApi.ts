@@ -131,3 +131,30 @@ export async function setShowPeerRequest(
   }
   return res.json();
 }
+
+export async function finaliseAction(
+  authorizedFetch: any,
+  itemId: number,
+  action: string,
+): Promise<{marked_status_time: number, message: string}> {
+  const res = await authorizedFetch(`${API_BASE}/user/action_plan_status`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+    },
+    body: JSON.stringify({ item_id: itemId, status: action }),
+  });
+
+  if (!res.ok) {
+    let msg = `Failed to update peer compare setting (HTTP ${res.status})`;
+    try {
+      const j = await res.json();
+      msg = j?.message || msg;
+    } catch {
+      /* ignore */
+    }
+    throw new Error(msg);
+  }
+  return res.json();
+}

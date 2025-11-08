@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
@@ -8,6 +8,7 @@ import {
   ItemDescription,
   ItemTitle,
 } from "@/components/ui/item";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 import {
   ChevronsRight as ChevronsRightIcon,
@@ -16,11 +17,143 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "@/context/AuthContext";
-import { fetchActionPlanRequest } from "@/lib/authApi";
-import { ActionPlanResponse } from "@/types/ActionPlan";
-import { ScrollArea } from "../ui/scroll-area";
+import { fetchActionPlanRequest, finaliseAction } from "@/lib/authApi";
+import { ActionPlanItem, ActionPlanResponse } from "@/types/ActionPlan";
 
 type FilterType = "all" | "completed" | "none";
+
+type ProgressCardProps = {
+  action: ActionPlanItem;
+  onCompleted: (id: number, action:string, marked_status_time: number) => void
+};
+
+function ProgressCard({ action, onCompleted }: ProgressCardProps) {
+  const { authorizedFetch } = useAuth();
+  const [completedText, setCompletedText] = useState("Completed timely!");
+  const [completedLateText, setCompletedLateText] = useState("Completed late.");
+
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const completedClick = (id: number) => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+      setCompletedText("Completed timely!");
+    }
+    else {
+      let timeLeft = 5;
+      setCompletedText(`Undo (${timeLeft}s)`);
+
+      intervalRef.current = setInterval(async() => {
+        timeLeft--;
+        setCompletedText(`Undo (${timeLeft}s)`);
+        if (timeLeft <= 0) {
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+          }
+          try {
+            const res = await finaliseAction(authorizedFetch, id, "Completed timely!");
+            onCompleted(id, "Completed timely!", res.marked_status_time)
+            setCompletedText("Completed timely!");
+          } catch (e: any) {
+            console.error("finaliseAction Error");
+          }
+        }
+      }, 1000);
+    }
+  }
+  
+  const intervalRef2 = useRef<NodeJS.Timeout | null>(null);
+  const completedLateClick = (id: number) => {
+    if (intervalRef2.current) {
+      clearInterval(intervalRef2.current);
+      intervalRef2.current = null;
+      setCompletedLateText("Completed late.");
+    }
+    else {
+      let timeLeft = 5;
+      setCompletedLateText(`Undo (${timeLeft}s)`);
+
+      intervalRef2.current = setInterval(async() => {
+        timeLeft--;
+        setCompletedLateText(`Undo (${timeLeft}s)`);
+        if (timeLeft <= 0) {
+          if (intervalRef2.current) {
+            clearInterval(intervalRef2.current);
+            intervalRef2.current = null;
+          }
+          try {
+            const res = await finaliseAction(authorizedFetch, id, "Completed late.");
+            onCompleted(id, "Completed late.", res.marked_status_time)
+            setCompletedLateText("Completed late.");
+          } catch (e: any) {
+            console.error("finaliseAction Error");
+          }
+        }
+      }, 1000);
+    }
+  }
+
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+      if (intervalRef2.current) {
+        clearInterval(intervalRef2.current);
+      }
+    };
+  }, []);
+
+  return (
+    <Item
+      key={action.id}
+      variant="outline"
+      className={[
+        action.status === "Completed timely!" ? "bg-green-50" :
+          action.status === "Completed late." ? "bg-slate-50" : ""
+      ].join(" ")}
+    >
+      <ItemContent>
+        {!action.status ? (
+          <div className="flex">
+            <ItemTitle>{action.action_content}</ItemTitle>
+            <div className="flex flex-col items-center justify-center gap-2 min-w-40">
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2 bg-green-50 border cursor-pointer"
+                disabled={intervalRef2.current !== null}
+                onClick={()=> {completedClick(action.id)}}
+              >
+                <span>{completedText}</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2 cursor-pointer"
+                disabled={intervalRef.current !== null}
+                onClick={() => completedLateClick(action.id)}
+              >
+                <span>{completedLateText}</span>
+              </Button>
+            </div>
+          </div>
+        ): (
+          <>
+            <ItemTitle>{action.action_content}</ItemTitle>
+            <ItemDescription>
+              <em>To be completed by: {action.target_completion_date}</em>
+            </ItemDescription>
+            <ItemDescription>
+              <em>Status: {action.status} (updated on: {(new Date(action.marked_status_time * 1000)).toLocaleDateString()})</em>
+            </ItemDescription>
+          </>
+        )}
+      </ItemContent>
+    </Item>
+  )
+}
 
 export function ProgressPanel() {
   const { authorizedFetch } = useAuth();
@@ -53,6 +186,17 @@ export function ProgressPanel() {
         return data.action_plan;
     }
   }, [data.action_plan, filter]);
+
+  const updateData = (id: number, action:string, marked_status_time: number) => {
+    setData((prev) => {
+    const updated = prev.action_plan.map((item) =>
+        item.id === id
+          ? { ...item, status: action, marked_status_time }
+          : item
+      );
+      return { ...prev, action_plan: updated };
+    });
+  }
 
   return (
     <div className="space-y-6">
@@ -104,48 +248,7 @@ export function ProgressPanel() {
           <ScrollArea className="h-[44rem] rounded-md border flex mt-4">
             <div className="flex w-full flex-col gap-4 mt-2 px-2">
               {filteredData.map(action => (
-                <Item
-                  key={action.id}
-                  variant="outline"
-                  className={[
-                    action.status === "Completed timely!" ? "bg-green-50" :
-                      action.status === "Completed late." ? "bg-slate-50" : ""
-                  ].join(" ")}
-                >
-                  <ItemContent>
-                    {!action.status ? (
-                      <div className="flex">
-                        <ItemTitle>{action.action_content}</ItemTitle>
-                        <div className="flex flex-col items-center justify-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="flex items-center gap-2 bg-green-50 border cursor-pointer"
-                          >
-                            <span>Completed timely!</span>
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="flex items-center gap-2 cursor-pointer"
-                          >
-                            <span>Completed late.</span>
-                          </Button>
-                        </div>
-                      </div>
-                    ): (
-                      <>
-                        <ItemTitle>{action.action_content}</ItemTitle>
-                        <ItemDescription>
-                          <em>To be completed by: {action.target_completion_date}</em>
-                        </ItemDescription>
-                        <ItemDescription>
-                          <em>Status: {action.status} (updated on: {(new Date(action.marked_status_time * 1000)).toLocaleDateString()})</em>
-                        </ItemDescription>
-                      </>
-                    )}
-                  </ItemContent>
-                </Item>
+                <ProgressCard key={action.id} action={action} onCompleted={updateData}/>
               ))}
             </div>
           </ScrollArea>
