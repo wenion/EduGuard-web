@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardAction,
@@ -20,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Table,
   TableBody,
@@ -32,10 +34,12 @@ import {
 } from "@/components/ui/table";
 
 import { useAuth } from "@/context/AuthContext";
-import { FeedbackSet } from "@/types/feedback";
+import { FeedbackSet } from "@/types/Feedback";
 import { fetchUserProfile, fetchUserFeedback } from "@/lib/authApi";
 import { Separator } from "@radix-ui/react-separator";
 import { FeedbackPanel } from "@/components/screens/FeedbackPanel";
+import { PlannerPanel } from "@/components/screens/PlannerPanel";
+import { ProgressPanel } from "@/components/screens/ProgressPanel";
 
 
 // import { OverallLine, __PING__ } from "./LineChart";
@@ -44,9 +48,7 @@ import { FeedbackPanel } from "@/components/screens/FeedbackPanel";
 import { overallEngagement, weeklyEngagement, assessmentPerformance } from "@/lib/userApi";
 import { OverallLine } from "./LineChart";
 import { WeeklyBar } from "@/components/screens/WeeklyBarChart";
-// import { AssessmentBoxplot } from "@/components/screens/BoxplotChart";
-
-
+import { AssessmentBoxplot } from "@/components/screens/BoxplotChart";
 
 
 type Unit = {
@@ -74,15 +76,16 @@ export default function DashboardView({
     fetchUserProfile(authorizedFetch);
   }, [authorizedFetch])
 
-  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [selectedUnitId, setSelectedUnitId] = useState<number | null>(null);
 
   const selectUnit = (u: Unit) => {
-    setSelectedId(u.unit_id);
+    setSelectedUnitId(u.unit_id);
     onUnitSelect?.(u);
+    //loadAnalyticalData
   };
 
   const backAll = () => {
-    setSelectedId(null);
+    setSelectedUnitId(null);
     onUnitSelect?.(null);
     onBackAllUnits?.();
   };
@@ -140,9 +143,21 @@ export default function DashboardView({
 
   const [selectedWeek, setSelectedWeek] = useState<string>("latest");
 
+  const handleTelemetry = {
+  onLegendClick: (e: { datasetIndex: number; text: string; visible: boolean }) => {
+    console.log("Legend click:", e);
+  },
+  onHover: (e: { datasetIndex: number; index: number; label: string }) => {
+    console.log("Hover:", e);
+  },
+  onDataClick: (e: { datasetIndex: number; index: number; label: string }) => {
+    console.log("Click:", e);
+  },
+};
+
   // ===== load all analytical data when a unit is selected =====
   useEffect(() => {
-    if (!selectedId) {
+    if (!selectedUnitId) {
       setOverall(null);
       setWeekly(null);
       setAssessment(null);
@@ -151,7 +166,7 @@ export default function DashboardView({
 
     (async () => {
       // overall
-      const o = await overallEngagement(authorizedFetch, selectedId, "weekly");
+      const o = await overallEngagement(authorizedFetch, selectedUnitId, "weekly");
       // FIX #4: coerce to numbers for Chart.js
       const coercedOverall = {
         ...o,
@@ -162,10 +177,10 @@ export default function DashboardView({
       setOverall(coercedOverall);
 
       // FIX #3: match old jQuery semantics (peers were hidden when show_peer === true)
-      setShowPeer(!o.show_peer);
+      setShowPeer(o.show_peer);
 
       // weekly (initial = latest)
-      const w = await weeklyEngagement(authorizedFetch, selectedId, "latest");
+      const w = await weeklyEngagement(authorizedFetch, selectedUnitId, "latest");
       const coercedWeekly = {
         ...w,
         user: w.user.map(Number),
@@ -176,16 +191,16 @@ export default function DashboardView({
       setSelectedWeek(String(w.selected_week));
 
       // assessment
-      const ap = await assessmentPerformance(authorizedFetch, selectedId);
+      const ap = await assessmentPerformance(authorizedFetch, selectedUnitId);
       setAssessment(ap);
     })().catch(console.error);
-  }, [authorizedFetch, selectedId]);
+  }, [authorizedFetch, selectedUnitId]);
 
   // ===== re-load weekly when week changes =====
   useEffect(() => {
-    if (!selectedId) return;
+    if (!selectedUnitId) return;
     (async () => {
-      const w = await weeklyEngagement(authorizedFetch, selectedId, selectedWeek);
+      const w = await weeklyEngagement(authorizedFetch, selectedUnitId, selectedWeek);
       const coercedWeekly = {
         ...w,
         user: w.user.map(Number),
@@ -194,7 +209,7 @@ export default function DashboardView({
       };
       setWeekly(coercedWeekly);
     })().catch(() => {});
-  }, [authorizedFetch, selectedId, selectedWeek]);
+  }, [authorizedFetch, selectedUnitId, selectedWeek]);
 
 
   return (
@@ -215,10 +230,11 @@ export default function DashboardView({
             <TableBody>
               {units.map((unit) => (
                 <TableRow
-                  className="cursor-pointer"
+                  className="cursor-pointer unit-select"
                   key={unit.unit_id}
-                  data-state={selectedId === unit.unit_id && "selected"}
-                  onClick={() => selectUnit(unit)}
+                  data-unit-id={unit.unit_id}
+                  data-state={selectedUnitId === unit.unit_id && "selected"}
+                  onClick={(e)=> {selectUnit(unit)}}
                 >
                   <TableCell>{unit.unit_code}</TableCell>
                   <TableCell>{unit.unit_name}</TableCell>
@@ -229,95 +245,92 @@ export default function DashboardView({
           </Table>
         </CardContent>
         <CardFooter className="justify-end">
-          <CardAction onClick={backAll}>Back to all units</CardAction>
+          <CardAction onClick={backAll}>
+            <Button className="cursor-pointer">Back to all units</Button>
+          </CardAction>
         </CardFooter>
       </Card>
 
-      <h4 className="text-sm leading-none font-medium">Learning Progress Insights</h4>
-      <Separator className="my-4" />
-      <Card>
-        <CardHeader>
-          <CardTitle>Your overall time engagement in this unit (measured by minutes)</CardTitle>
-        </CardHeader>
-        <CardContent>
-         {/* FIX #2: give the chart a height so canvas isn’t 0px */}
-          <div className="h-80">
-            {overall ? (
-              <OverallLine
-                labels={overall.label}
-                dUser={overall.user}
-                lUser="Your time engagement"
-                dPeers={overall.class}
-                lPeers="Average time engagement of your peers this semester"
-                dPrev={overall.pre_semester}
-                lPrev="Average time engagement of HD & D students in the previous semester"
-                showPeer={showPeer}
-                telemetry={{
-                onLegendClick: ({ datasetIndex, text, visible }) => {
-                  console.log("legend click", { datasetIndex, text, visible });
-                  // send to your API if desired
-                },
-                onHover: ({ datasetIndex, index, label }) => {
-                   console.log("hover", { datasetIndex, index, label });
-                },
-                onDataClick: ({ datasetIndex, index, label }) => {
-                   console.log("click", { datasetIndex, index, label });
-                },
-              }}
-              />
-            ) : (
+      {selectedUnitId && (
+        <>
+          <Tabs defaultValue="insight" className="w-full pt-4">
+            <TabsList className="flex m-auto">
+              <TabsTrigger value="insight">Learning Progress Insights</TabsTrigger>
+              <TabsTrigger value="planner">How You Can Learn Better?</TabsTrigger>
+            </TabsList>
+            <TabsContent value="insight">
+              <div className="flex flex-col gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Your overall time engagement in this unit (measured by minutes)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-80">
+                  {overall ? (
+                    <OverallLine
+                    labels={overall.label}
+                    dUser={overall.user}
+                    lUser="Your time engagement"
+                    dPeers={overall.class}
+                    lPeers="Average time engagement of your peers this semester"
+                    dPrev={overall.pre_semester}
+                    lPrev="Average time engagement of HD & D students in the previous semester"
+                    showPeer={showPeer}
+                    telemetry={handleTelemetry}
+                />
+              ) : (
               <p className="text-sm text-muted-foreground">Select a unit to load the chart…</p>
             )}
           </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+          </Card>
+            
+              <Card>
+                <CardHeader>
+                  <CardTitle>Your time engagement with course materials from a specific week (measured by minutes)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-80">
+                  {weekly ? (
+                    <WeeklyBar
+                      labels={weekly.label}
+                      dUser={weekly.user}
+                      lUser="Your time engagement"
+                      dPeers={weekly.class}
+                      lPeers="Average time engagement of your peers this semester"
+                      dPrev={weekly.pre_semester}
+                      lPrev="Average time engagement of HD & D students in the previous semester"
+                      showPeer={showPeer}
+                      telemetry={handleTelemetry}
+                    />
+                  ) : (
+                    <p className="text-sm text-muted-foreground">Select a unit to load the chart…</p>
+                  )}
+                  </div>
+                </CardContent>
+                <CardFooter className="justify-center">
+                  <Select
+                    value={selectedWeek}
+                    onValueChange={(v) => setSelectedWeek(v)}
+                    disabled={!weekly}
+                  >
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue placeholder="Select week" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        {(weekly?.weeks ?? []).map((w) => (
+                          <SelectItem key={String(w)} value={String(w)}>
+                            Week {String(w)}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </CardFooter>
+              </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Your time engagement with course materials from a specific week (measured by minutes)</CardTitle>
-        </CardHeader>
-        <CardContent>
-       <div className="h-80">
-            {weekly ? (
-              <WeeklyBar
-                labels={weekly.label}
-                dUser={weekly.user}
-                lUser="Your time engagement"
-                dPeers={weekly.class}
-                lPeers="Average time engagement of your peers this semester"
-                dPrev={weekly.pre_semester}
-                lPrev="Average time engagement of HD & D students in the previous semester"
-                showPeer={showPeer}
-              />
-            ) : (
-              <p className="text-sm text-muted-foreground">Select a unit to load the chart…</p>
-            )}
-          </div>
-        </CardContent>
-        <CardFooter className="justify-center">
-           <Select
-            value={selectedWeek}
-            onValueChange={(v) => setSelectedWeek(v)}
-            disabled={!weekly}
-          >
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Select week" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                {(weekly?.weeks ?? []).map((w) => (
-                  <SelectItem key={String(w)} value={String(w)}>
-                    Week {String(w)}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </CardFooter>
-      </Card>
-
-      {/* Assessment performance (boxplot)
-      <Card>
+               <Card>
         <CardHeader>
           <CardTitle>Assessment performance</CardTitle>
         </CardHeader>
@@ -326,35 +339,34 @@ export default function DashboardView({
             {assessment ? (
               <AssessmentBoxplot
                 labels={assessment.label}
-                dUser={assessment.user}
+                dUser={assessment.user}              // line data (your performance)
                 lUser="Your assessment performance"
-                dPeers={assessment.class}
+                dPeers={assessment.class}              // peers (boxplot)
                 lPeers="Overall class performance this semester"
-                dPrev={assessment.pre_semester}
+                dPrev={assessment.pre_semester}       // previous semester (boxplot)
                 lPrev="Overall class performance from the previous semester"
                 showPeer={showPeer}
+                telemetry={handleTelemetry}
               />
             ) : (
               <p className="text-sm text-muted-foreground">Select a unit to load the chart…</p>
             )}
           </div>
         </CardContent>
-      </Card> */}
-
-      <h4
-        className="text-sm leading-none font-medium"
-      >
-        How You Can Learn Better?
-      </h4>
-      <Separator className="my-4" />
-      <Card>
-        <CardHeader>
-          <CardTitle>How you should improve?</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <FeedbackPanel feedbackSet={data} />
-        </CardContent>
       </Card>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="planner">
+              <div className="flex">
+                <FeedbackPanel feedbackSet={data} />
+                <PlannerPanel />
+                <ProgressPanel />
+              </div>
+            </TabsContent>
+          </Tabs>
+        </>
+      )}
     </>
   );
 }
