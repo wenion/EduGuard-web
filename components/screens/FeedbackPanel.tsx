@@ -53,7 +53,7 @@ function FeedbackCard({
                   <div
                     draggable
                     key={index}
-                    className="flex items-center justify-between border hover:bg-slate-50 text-sm"
+                    className="flex items-center justify-between rounded-sm border hover:bg-slate-50 text-sm"
                     onDragStart={(e) => handleDragStart(e, index, feedback.actionable_advice)}
                   >
                     <span className="m-4">{advice}</span>
@@ -78,7 +78,7 @@ function FeedbackCard({
                 <div
                   draggable
                   key={index}
-                  className="flex items-center justify-between border hover:bg-slate-50 text-sm"
+                  className="flex items-center justify-between rounded-sm border hover:bg-slate-50 text-sm"
                   onDragStart={(e) => handleDragStart(e, index, feedback.feedforward_actions)}
                 >
                   <span className="m-4">{action}</span>

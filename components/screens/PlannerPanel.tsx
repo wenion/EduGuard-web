@@ -19,29 +19,33 @@ import {
 } from "lucide-react";
 
 import { DatePicker } from "@/components/date-picker";
+import { useAuth } from "@/context/AuthContext";
 
 type PlannerProps = {
   index: number;
   content: string;
   onDelete: (index: number) => void;
+  onDateSelect: (date: string) => void;
   isLast?: boolean;
   lastRef?: React.Ref<HTMLDivElement>;
+  invalid?: boolean;
 };
 
-function Planner({ index, content, onDelete, isLast, lastRef }: PlannerProps) {
-  const [edit, setEdit] = useState(false);
+function Planner({ index, content, onDelete, onDateSelect, isLast, lastRef, invalid }: PlannerProps) {
+  const [edit, setEdit] = useState(content === "" ? true : false);
 
   return (
     <Item
       variant="outline"
       className="flex items-center justify-between border h-fit"
       ref={isLast ? lastRef : undefined}
+      id = {`planner-item-${index}`}
     >
-      <div className="flex">
+      <div className="flex w-full gap-2">
         {edit ? (
-          <Textarea defaultValue={content}/>
+          <Textarea defaultValue={content} className="min-w-3/5"/>
         ) : (
-          <span>{content}</span>
+          <div className="w-3/4">{content}</div>
         )}
         {edit ? (
           <div className="flex justify-center items-center px-4">
@@ -57,13 +61,13 @@ function Planner({ index, content, onDelete, isLast, lastRef }: PlannerProps) {
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Save</p>
+                <p>Done</p>
               </TooltipContent>
             </Tooltip>
           </div>
         ) : (
           <div className="flex flex-col">
-            <DatePicker className="min-w-30" />
+            <DatePicker onDateChanged={onDateSelect} className="" invalid={invalid}/>
             <div className="flex justify-center gap-4 my-4">
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -104,7 +108,9 @@ function Planner({ index, content, onDelete, isLast, lastRef }: PlannerProps) {
 }
 
 export function PlannerPanel() {
-  const [data, setData] = useState<string[]>([]);
+  const { authorizedFetch } = useAuth();
+  const [data, setData] = useState<{item: string, date: string}[]>([]);
+  const [invalidIndex, setInvalidIndex] = useState<number | null>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null); // container reference
   const lastItemRef = useRef<HTMLDivElement>(null); // last added item reference
@@ -113,9 +119,27 @@ export function PlannerPanel() {
     setData((prev) => prev.filter((_, i) => i !== index));
   }
 
+  const onSave = () => {
+    console.log("onSave data", data)
+    for (let i = 0; i < data.length; i++) {
+      const item = data[i];
+
+      if (!item.item || !item.date) {
+        console.log("Item or date is empty for index", i);
+        setInvalidIndex(i);
+
+        const row = document.getElementById(`planner-item-${i}`);
+        row?.scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+      }
+    }
+    // createActionPlanRequest(authorizedFetch, )
+  }
+
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
-    const newItem = e.dataTransfer.getData("text/plain");
+    const newDate = e.dataTransfer.getData("text/plain");
+    const newItem = {item: newDate, date: ""};
     setData((prev) => [...prev, newItem]);
   };
 
@@ -135,7 +159,7 @@ export function PlannerPanel() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-w-[520px]">
       <Card>
         <CardHeader>
           <CardTitle className="text-xl font-medium">How about developing an action plan for improvement?</CardTitle>
@@ -151,11 +175,12 @@ export function PlannerPanel() {
             </em>
           </p>
 
-          <div className="flex mt-2 justify-end">
+          <div className="flex justify-end my-4 gap-4">
             <Button
               variant="outline"
               size="sm"
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 cursor-pointer"
+              onClick={() => setData((prev) => [...prev, {item: "", date: ""}])}
             >
               <PlusIcon className="h-4 w-4" />
               <span>New Plan Item</span>
@@ -163,7 +188,8 @@ export function PlannerPanel() {
             <Button
               variant="outline"
               size="sm"
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 cursor-pointer"
+              onClick={onSave}
             >
               <CheckIcon className="h-4 w-4" />
               <span>Save</span>
@@ -188,10 +214,12 @@ export function PlannerPanel() {
                   <Planner
                     key={index}
                     index={index}
-                    content={item}
+                    content={item.item}
                     onDelete={(index) => onDelete(index)}
+                    onDateSelect={(date: string) => {item.date = date; if (invalidIndex === index) {setInvalidIndex(null)}}}
                     isLast={index === data.length - 1}
                     lastRef={lastItemRef}
+                    invalid={invalidIndex === index ? true : false}
                   />
                 ))
               )}
