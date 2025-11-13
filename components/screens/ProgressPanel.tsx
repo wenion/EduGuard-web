@@ -9,11 +9,17 @@ import {
   ItemTitle,
 } from "@/components/ui/item";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import {
   ChevronsRight as ChevronsRightIcon,
   CircleCheckBig as CircleCheckBigIcon,
-  Rows4 as Rows4Icon
+  Rows4 as Rows4Icon,
+  Trash2 as TrashIcon
 } from "lucide-react";
 
 import { useAuth } from "@/context/AuthContext";
@@ -25,9 +31,10 @@ type FilterType = "all" | "completed" | "none";
 type ProgressCardProps = {
   action: ActionPlanItem;
   onCompleted: (id: number, action:string, marked_status_time: number) => void
+  onDeteled: (id: number, action:string, marked_status_time: number) => void
 };
 
-function ProgressCard({ action, onCompleted }: ProgressCardProps) {
+function ProgressCard({ action, onCompleted, onDeteled }: ProgressCardProps) {
   const { authorizedFetch } = useAuth();
   const [completedText, setCompletedText] = useState("Completed timely!");
   const [completedLateText, setCompletedLateText] = useState("Completed late.");
@@ -94,6 +101,15 @@ function ProgressCard({ action, onCompleted }: ProgressCardProps) {
     }
   }
 
+  const deleteClick = async (id: number) => {
+    try {
+      const res = await finaliseAction(authorizedFetch, id, "deleted");
+      onDeteled(id, "delete", res.marked_status_time);
+    } catch (e: any) {
+      console.error("deleteAction Error");
+    }
+  }
+
   useEffect(() => {
     return () => {
       if (intervalRef.current) {
@@ -138,6 +154,23 @@ function ProgressCard({ action, onCompleted }: ProgressCardProps) {
                 <span>{completedLateText}</span>
               </Button>
             </div>
+            <div className="absoluted mr-[-10px] mt-[-10px]">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="cursor-pointer rounded-full"
+                    onDoubleClick={() => deleteClick(action.id)}
+                  >
+                    <TrashIcon />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Double click to delete.</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
           </div>
         ): (
           <>
@@ -156,13 +189,17 @@ function ProgressCard({ action, onCompleted }: ProgressCardProps) {
 }
 
 export function ProgressPanel() {
-  const { authorizedFetch } = useAuth();
+  const { authorizedFetch, selectedUnitId } = useAuth();
   const [data, setData] = useState<ActionPlanResponse>({ action_plan: [] });
   const [filter, setFilter] = useState<FilterType>("all");
 
   const load = async () => {
     try {
-      const res = await fetchActionPlanRequest(authorizedFetch, 4);
+      if (!selectedUnitId) {
+        console.error("No unit selected.");
+        return;
+      }
+      const res = await fetchActionPlanRequest(authorizedFetch, selectedUnitId);
       setData(res);
     } catch (e: any) {
       console.error("Failed to load action plan data:", e);
@@ -189,12 +226,19 @@ export function ProgressPanel() {
 
   const updateData = (id: number, action:string, marked_status_time: number) => {
     setData((prev) => {
-    const updated = prev.action_plan.map((item) =>
+      const updated = prev.action_plan.map((item) =>
         item.id === id
           ? { ...item, status: action, marked_status_time }
           : item
       );
       return { ...prev, action_plan: updated };
+    });
+  }
+
+  const onDetele = (id: number, action:string, marked_status_time: number) => {
+    setData((prev) => {
+      const filtered = prev.action_plan.filter((item) => item.id !== id);
+      return { ...prev, action_plan: filtered };
     });
   }
 
@@ -248,7 +292,12 @@ export function ProgressPanel() {
           <ScrollArea className="h-[44rem] rounded-md border flex mt-4">
             <div className="flex w-full flex-col gap-4 mt-2 px-2">
               {filteredData.map(action => (
-                <ProgressCard key={action.id} action={action} onCompleted={updateData}/>
+                <ProgressCard
+                  key={action.id}
+                  action={action}
+                  onCompleted={updateData}
+                  onDeteled={onDetele}
+                />
               ))}
             </div>
           </ScrollArea>

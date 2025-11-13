@@ -1,5 +1,6 @@
 "use client";
 import type { Dispatch, SetStateAction } from "react";
+import { useSession } from "next-auth/react";
 type Screen = "home" | "dashboard" | "settings";
 
 export default function HomeView({

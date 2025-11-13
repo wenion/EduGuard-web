@@ -66,7 +66,13 @@ export default function DashboardView({
   onBackAllUnits?: () => void;
   onUnitSelect?: (unit: Unit | null) => void;
 }) {
-  const { user, isAuthenticated, authorizedFetch } = useAuth();
+  const {
+    user,
+    isAuthenticated,
+    authorizedFetch,
+    selectedUnitId,
+    setUnitId
+  } = useAuth();
   const units = useMemo<Unit[]>(
     () => (user?.enrolled_units as Unit[] | undefined) ?? [],
     [user]
@@ -76,16 +82,14 @@ export default function DashboardView({
     fetchUserProfile(authorizedFetch);
   }, [authorizedFetch])
 
-  const [selectedUnitId, setSelectedUnitId] = useState<number | null>(null);
-
   const selectUnit = (u: Unit) => {
-    setSelectedUnitId(u.unit_id);
+    setUnitId(u.unit_id);
     onUnitSelect?.(u);
     //loadAnalyticalData
   };
 
   const backAll = () => {
-    setSelectedUnitId(null);
+    setUnitId(null);
     onUnitSelect?.(null);
     onBackAllUnits?.();
   };
@@ -94,7 +98,11 @@ export default function DashboardView({
 
   const load = async () => {
     try {
-      const res = await fetchUserFeedback(authorizedFetch, 4);
+      if (!selectedUnitId) {
+        console.error("No unit selected.");
+        return;
+      }
+      const res = await fetchUserFeedback(authorizedFetch, selectedUnitId);
       const feedbackArr: FeedbackSet = res;
       setData(feedbackArr);
     } catch (e: any) {

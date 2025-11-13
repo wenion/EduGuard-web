@@ -11,6 +11,8 @@ type AuthState = {
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
+  selectedUnitId: number | null;
+  setUnitId: (unitId: number | null) => void;
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
   authorizedFetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
@@ -54,6 +56,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setErr] = useState<string | null>(null);
   const expiryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const [selectedUnitId, setSelectedUnitId] = useState<number | null>(null);
 
   const clearExpiryTimer = () => {
     if (expiryTimer.current) {
@@ -176,6 +180,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const setUnitId = (unitId: number | null) => {
+    setSelectedUnitId(unitId);
+  };
+
   const value = useMemo<AuthState>(() => ({
     token,
     user,
@@ -184,11 +192,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isAuthenticated: !!token && !!expiresAt && Date.now() < expiresAt,
     loading,
     error: error,
+    selectedUnitId,
+    setUnitId,
     login,
     logout,
     authorizedFetch,
     switchShowPeerRequest,
-  }), [token, user, genaiAccess, expiresAt, loading, error]);
+  }), [token, user, genaiAccess, expiresAt, loading, error, selectedUnitId]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
