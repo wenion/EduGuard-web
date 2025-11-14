@@ -58,6 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const expiryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [selectedUnitId, setSelectedUnitId] = useState<number | null>(null);
+  const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
 
   const clearExpiryTimer = () => {
     if (expiryTimer.current) {
@@ -168,12 +169,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const switchShowPeerRequest = async (value: boolean) => {
     try {
-      const res = await setShowPeerRequest(authorizedFetch, value);
-      const data = readStored();
-      if (data && data.user) {
-        const user = data.user;
-        user.compareWithPeer = value;
-        updateStored({ user: user });
+      await setShowPeerRequest(authorizedFetch, value);
+
+      setUser((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          compareWithPeer: value,
+        };
+      });
+
+      const stored = readStored();
+      if (stored?.user) {
+        const updatedUser = {
+          ...stored.user,
+          compareWithPeer: value,
+        };
+        updateStored({ user: updatedUser });
       }
     } catch (e: any) {
       console.error("Failed to load action plan data:", e);
