@@ -17,11 +17,11 @@ type Telemetry = {
 
 type Props = {
   labels: string[];
-  dUser: number[];
+  dUser: {x: string; y: number}[];
   lUser: string;
   dPrev: any[];
   lPrev: string;
-  dPeers: number[]; 
+  dPeers: number[][];
   lPeers: string;
   showPeer: boolean;
   telemetry?: Telemetry;
