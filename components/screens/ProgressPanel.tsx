@@ -188,27 +188,13 @@ function ProgressCard({ action, onCompleted, onDeteled }: ProgressCardProps) {
   )
 }
 
-export function ProgressPanel() {
-  const { authorizedFetch, selectedUnitId } = useAuth();
+export function ProgressPanel({ plannerData }: {plannerData: ActionPlanResponse}) {
   const [data, setData] = useState<ActionPlanResponse>({ action_plan: [] });
   const [filter, setFilter] = useState<FilterType>("all");
 
-  const load = async () => {
-    try {
-      if (!selectedUnitId) {
-        console.error("No unit selected.");
-        return;
-      }
-      const res = await fetchActionPlanRequest(authorizedFetch, selectedUnitId);
-      setData(res);
-    } catch (e: any) {
-      console.error("Failed to load action plan data:", e);
-    }
-  };
-
   useEffect(() => {
-    load();
-  }, []);
+    setData(plannerData);
+  }, [plannerData]);
 
   const filteredData = useMemo(() => {
     switch (filter) {

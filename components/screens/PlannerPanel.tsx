@@ -20,6 +20,7 @@ import {
 
 import { DatePicker } from "@/components/date-picker";
 import { useAuth } from "@/context/AuthContext";
+import { createActionPlanRequest } from "@/lib/authApi";
 
 type PlannerProps = {
   index: number;
@@ -107,8 +108,12 @@ function Planner({ index, content, onDelete, onDateSelect, isLast, lastRef, inva
   )
 }
 
-export function PlannerPanel() {
-  const { authorizedFetch } = useAuth();
+type PlannerPanelProps = {
+  onAddPlanner: (data: {item: string, date: string}[]) => void
+};
+
+export function PlannerPanel({onAddPlanner}: PlannerPanelProps) {
+  const { authorizedFetch, selectedUnitId } = useAuth();
   const [data, setData] = useState<{item: string, date: string}[]>([]);
   const [invalidIndex, setInvalidIndex] = useState<number | null>(null);
 
@@ -120,7 +125,6 @@ export function PlannerPanel() {
   }
 
   const onSave = () => {
-    console.log("onSave data", data)
     for (let i = 0; i < data.length; i++) {
       const item = data[i];
 
@@ -133,7 +137,15 @@ export function PlannerPanel() {
         return;
       }
     }
-    // createActionPlanRequest(authorizedFetch, )
+    if (selectedUnitId) {
+      try {
+        const res = createActionPlanRequest(authorizedFetch, selectedUnitId, data);
+        onAddPlanner(data);
+        setData([]);
+      } catch (e: any) {
+        console.error("Failed to save action plan data:", e);
+      }
+    }
   }
 
   const handleDrop = (e: React.DragEvent) => {
@@ -203,12 +215,11 @@ export function PlannerPanel() {
           >
             <div className="flex w-full flex-col gap-4 my-2 px-2" ref={scrollRef}>
               {data.length === 0 ? (
-                <Item
-                  variant="outline"
-                  className="flex items-center justify-between border h-56 bg-slate-300"
+                <div
+                  className="flex items-center rounded justify-center border h-56 bg-slate-100 text-2xl select-none"
                 >
-                  <span>Your Action Plan Item</span>
-                </Item>
+                  Your Action Plan Item
+                </div>
               ) : (
                 data.map((item, index) => (
                   <Planner

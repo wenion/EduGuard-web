@@ -35,7 +35,8 @@ import {
 
 import { useAuth } from "@/context/AuthContext";
 import { FeedbackSet } from "@/types/Feedback";
-import { fetchUserProfile, fetchUserFeedback } from "@/lib/authApi";
+import { ActionPlanItem, ActionPlanResponse } from "@/types/ActionPlan";
+import { fetchUserProfile, fetchUserFeedback, fetchActionPlanRequest } from "@/lib/authApi";
 import { Separator } from "@radix-ui/react-separator";
 import { FeedbackPanel } from "@/components/screens/FeedbackPanel";
 import { PlannerPanel } from "@/components/screens/PlannerPanel";
@@ -95,8 +96,14 @@ export default function DashboardView({
   };
 
   const [data, setData] = useState<FeedbackSet>({ feedback_set: [] });
+  const [plannerData, setPlannerData] = useState<ActionPlanResponse>({ action_plan: [] });
 
-  const load = async () => {
+  const loadPrescriptiveData = () => {
+    loadFeedback();
+    loadActionPlan();
+  }
+
+  const loadFeedback = async () => {
     try {
       if (!selectedUnitId) {
         console.error("No unit selected.");
@@ -110,9 +117,19 @@ export default function DashboardView({
     }
   };
 
-  useEffect(() => {
-    load();
-  }, []); // Load once on mount
+  const loadActionPlan = async () => {
+    try {
+      if (!selectedUnitId) {
+        console.error("No unit selected.");
+        return;
+      }
+      const res = await fetchActionPlanRequest(authorizedFetch, selectedUnitId);
+      console.log("plan", res)
+      setPlannerData(res);
+    } catch (e: any) {
+      console.error("Failed to load action plan data:", e);
+    }
+  };
 
   if (!isAuthenticated) {
     return <p className="text-muted">Please sign in to view your units.</p>;
@@ -264,7 +281,12 @@ export default function DashboardView({
           <Tabs defaultValue="insight" className="w-full pt-4">
             <TabsList className="flex m-auto">
               <TabsTrigger value="insight">Learning Progress Insights</TabsTrigger>
-              <TabsTrigger value="planner">How You Can Learn Better?</TabsTrigger>
+              <TabsTrigger
+                value="planner"
+                onClick={loadPrescriptiveData}
+              >
+                How You Can Learn Better?
+              </TabsTrigger>
             </TabsList>
             <TabsContent value="insight">
               <div className="flex flex-col gap-6">
@@ -368,8 +390,8 @@ export default function DashboardView({
             <TabsContent value="planner">
               <div className="flex">
                 <FeedbackPanel feedbackSet={data} />
-                <PlannerPanel />
-                <ProgressPanel />
+                <PlannerPanel onAddPlanner={loadActionPlan} />
+                <ProgressPanel plannerData ={plannerData} />
               </div>
             </TabsContent>
           </Tabs>
