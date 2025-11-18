@@ -186,7 +186,7 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
     <div className={className}>
       <Card>
         <CardHeader>
-          <CardTitle className="font-thin">Action planning</CardTitle>
+          <CardTitle className="font-thin uppercase">Action planning</CardTitle>
           <CardDescription className="text-lg font-semibold text-black">How about developing an action plan for improvement?</CardDescription>
           <CardAction className="justify-self-center self-center">
             <SquareKanbanIcon />

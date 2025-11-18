@@ -38,7 +38,7 @@ function FeedbackCard({
     <div className={className}>
       <Card>
         <CardHeader>
-          <CardTitle className="font-thin">Feedback summary</CardTitle>
+          <CardTitle className="font-thin uppercase">Feedback summary</CardTitle>
           <CardDescription className="text-lg font-semibold text-black">How you should improve?</CardDescription>
           <CardAction className="justify-self-center self-center">
             <Lightbulb />
