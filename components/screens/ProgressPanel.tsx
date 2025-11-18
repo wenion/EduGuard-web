@@ -188,7 +188,12 @@ function ProgressCard({ action, onCompleted, onDeteled }: ProgressCardProps) {
   )
 }
 
-export function ProgressPanel({ plannerData }: {plannerData: ActionPlanResponse}) {
+type ProgressPanelProps = {
+  plannerData: ActionPlanResponse;
+  className?: string;
+};
+
+export function ProgressPanel({ plannerData, className }: ProgressPanelProps) {
   const [data, setData] = useState<ActionPlanResponse>({ action_plan: [] });
   const [filter, setFilter] = useState<FilterType>("all");
 
@@ -229,7 +234,7 @@ export function ProgressPanel({ plannerData }: {plannerData: ActionPlanResponse}
   }
 
   return (
-    <div className="space-y-6">
+    <div className={className}>
       <Card>
         <CardHeader>
           <CardTitle className="text-xl font-medium">How are you progressing with your plan?</CardTitle>

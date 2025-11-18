@@ -412,10 +412,10 @@ export default function DashboardView({
             </TabsContent>
 
             <TabsContent value="planner">
-              <div className="flex">
-                <FeedbackPanel feedbackSet={data} />
-                <PlannerPanel onAddPlanner={loadActionPlan} />
-                <ProgressPanel plannerData ={plannerData} />
+              <div className="flex flex-col lg:flex-row gap-6">
+                <FeedbackPanel feedbackSet={data} className="lg:w-1/3" />
+                <PlannerPanel onAddPlanner={loadActionPlan} className="lg:w-1/3" />
+                <ProgressPanel plannerData ={plannerData} className="lg:w-1/3" />
               </div>
             </TabsContent>
           </Tabs>

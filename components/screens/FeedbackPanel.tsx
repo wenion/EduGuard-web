@@ -7,15 +7,19 @@ import { ChevronLeft, ChevronRight, GripVertical  } from "lucide-react";
 
 import { Feedback, FeedbackSet } from "@/types/Feedback"; // Import type for feedback
 
+type FeedbackCardProps = {
+  feedback: Feedback,
+  onPrevious: () => void,
+  onNext: () => void,
+  className?: string,
+}
+
 function FeedbackCard({
   feedback,
   onPrevious,
   onNext,
-}: {
-  feedback: Feedback,
-  onPrevious: () => void,
-  onNext: () => void,
-}) {
+  className,
+}: FeedbackCardProps) {
   const currentWeek = useMemo(() => feedback.cur_week, [feedback]);
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
 
@@ -30,8 +34,8 @@ function FeedbackCard({
     e.dataTransfer.effectAllowed = "move";
   };
   return (
-    <div className="space-y-6">
-      <Card className="w-full">
+    <div className={className}>
+      <Card>
         <CardHeader>
           <CardTitle className="text-xl font-medium">How you should improve?</CardTitle>
         </CardHeader>
@@ -115,7 +119,12 @@ function FeedbackCard({
   );
 }
 
-export function FeedbackPanel({ feedbackSet }: { feedbackSet: FeedbackSet }) {
+type FeedbackPanelProps = {
+  feedbackSet: FeedbackSet,
+  className?: string
+};
+
+export function FeedbackPanel({ feedbackSet, className }: FeedbackPanelProps) {
   const [index, setIndex] = useState(0);
   const onPrevious = useCallback(() => {
     setIndex((prevIndex) => (prevIndex > 0 ? prevIndex - 1 : feedbackSet.feedback_set.length - 1));
@@ -129,7 +138,7 @@ export function FeedbackPanel({ feedbackSet }: { feedbackSet: FeedbackSet }) {
   }, [feedbackSet.feedback_set, index]);
   return (
     <>
-      {current && <FeedbackCard feedback={current} onPrevious={onPrevious} onNext={onNext} />}
+      {current && <FeedbackCard className={className} feedback={current} onPrevious={onPrevious} onNext={onNext} />}
     </>
   );
 }

@@ -109,10 +109,11 @@ function Planner({ index, content, onDelete, onDateSelect, isLast, lastRef, inva
 }
 
 type PlannerPanelProps = {
-  onAddPlanner: (data: {item: string, date: string}[]) => void
+  onAddPlanner: (data: {item: string, date: string}[]) => void,
+  className?: string
 };
 
-export function PlannerPanel({onAddPlanner}: PlannerPanelProps) {
+export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
   const { authorizedFetch, selectedUnitId } = useAuth();
   const [data, setData] = useState<{item: string, date: string}[]>([]);
   const [invalidIndex, setInvalidIndex] = useState<number | null>(null);
@@ -171,7 +172,7 @@ export function PlannerPanel({onAddPlanner}: PlannerPanelProps) {
   };
 
   return (
-    <div className="space-y-6 min-w-[520px]">
+    <div className={className}>
       <Card>
         <CardHeader>
           <CardTitle className="text-xl font-medium">How about developing an action plan for improvement?</CardTitle>
