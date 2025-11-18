@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
+import { Card, CardAction, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import {
   Item,
   ItemContent,
@@ -19,7 +20,10 @@ import {
   ChevronsRight as ChevronsRightIcon,
   CircleCheckBig as CircleCheckBigIcon,
   Rows4 as Rows4Icon,
-  Trash2 as TrashIcon
+  Trash2 as TrashIcon,
+  ChartLine as ChartLineIcon,
+  Check as CheckIcon,
+  TriangleAlert as TriangleAlertIcon
 } from "lucide-react";
 
 import { useAuth } from "@/context/AuthContext";
@@ -127,34 +131,19 @@ function ProgressCard({ action, onCompleted, onDeteled }: ProgressCardProps) {
       variant="outline"
       className={[
         action.status === "Completed timely!" ? "bg-green-50" :
-          action.status === "Completed late." ? "bg-slate-50" : ""
+          action.status === "Completed late." ? "bg-orange-100" : "bg-blue-50"
       ].join(" ")}
     >
       <ItemContent>
         {!action.status ? (
-          <div className="flex">
-            <ItemTitle>{action.action_content}</ItemTitle>
-            <div className="flex flex-col items-center justify-center gap-2 min-w-40">
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-2 bg-green-50 border cursor-pointer"
-                disabled={intervalRef2.current !== null}
-                onClick={()=> {completedClick(action.id)}}
-              >
-                <span>{completedText}</span>
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-2 cursor-pointer"
-                disabled={intervalRef.current !== null}
-                onClick={() => completedLateClick(action.id)}
-              >
-                <span>{completedLateText}</span>
-              </Button>
-            </div>
-            <div className="absoluted mr-[-10px] mt-[-10px]">
+          <div className="flex flex-col">
+            <div className="flex">
+              <div>
+                <ItemTitle>{action.action_content}</ItemTitle>
+                <ItemDescription className="italic">
+                  To be completed by: {action.target_completion_date}
+                </ItemDescription>
+              </div>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
@@ -170,6 +159,28 @@ function ProgressCard({ action, onCompleted, onDeteled }: ProgressCardProps) {
                   <p>Double click to delete.</p>
                 </TooltipContent>
               </Tooltip>
+            </div>
+            <div className="flex flex-col gap-2 my-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2 border border-green-50 cursor-pointer hover:bg-green-50 text-green-400"
+                disabled={intervalRef2.current !== null}
+                onClick={()=> {completedClick(action.id)}}
+              >
+                <CheckIcon/>
+                <span>{completedText}</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2 cursor-pointer border border-orange-100 hover:bg-orange-100 text-orange-400"
+                disabled={intervalRef.current !== null}
+                onClick={() => completedLateClick(action.id)}
+              >
+                <TriangleAlertIcon />
+                <span>{completedLateText}</span>
+              </Button>
             </div>
           </div>
         ): (
@@ -237,20 +248,23 @@ export function ProgressPanel({ plannerData, className }: ProgressPanelProps) {
     <div className={className}>
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl font-medium">How are you progressing with your plan?</CardTitle>
+          <CardTitle className="font-thin uppercase">Progress pulse</CardTitle>
+          <CardDescription className="text-lg font-semibold text-black">How are you progressing with your plan?</CardDescription>
+          <CardAction className="justify-self-center self-center">
+            <ChartLineIcon />
+          </CardAction>
         </CardHeader>
         <CardContent>
-          <CardDescription className="text-lg">
-            <em>Here, you can track your progress in carrying out the action plan.</em>
+          <Badge variant="secondary" className="py-2">Mark Your Goal Status</Badge>
+          <CardDescription className="text-lg font-normal text-black font-sans italic pt-2">
+            Track your progress as you carry out the action plan.
           </CardDescription>
 
-          <p className="text-base text-muted-foreground mt-2">
-            <em>
-              Mark your completed action item to keep track of your progress:
-            </em>
+          <p className="text-base text-muted-foreground mt-2 italic">
+            Use the filters below to focus on what matters most.
           </p>
 
-          <div className="flex justify-end my-4 gap-4">
+          <div className="flex justify-end my-4 gap-2 lg:flex-wrap">
             <Button
               variant="outline"
               size="sm"
