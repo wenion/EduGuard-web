@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -45,6 +45,7 @@ import { fetchUserProfile, fetchUserFeedback, fetchActionPlanRequest } from "@/l
 import { FeedbackPanel } from "@/components/screens/FeedbackPanel";
 import { PlannerPanel } from "@/components/screens/PlannerPanel";
 import { ProgressPanel } from "@/components/screens/ProgressPanel";
+import { ChatbotPanel } from "@/components/screens/ChatbotPanel";
 import { CornerDownLeft } from 'lucide-react';
 
 
@@ -421,6 +422,8 @@ export default function DashboardView({
           </Tabs>
         </>
       )}
+
+      <ChatbotPanel />
     </>
   );
 }
