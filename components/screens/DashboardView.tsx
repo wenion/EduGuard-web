@@ -45,6 +45,7 @@ import { fetchUserProfile, fetchUserFeedback, fetchActionPlanRequest } from "@/l
 import { FeedbackPanel } from "@/components/screens/FeedbackPanel";
 import { PlannerPanel } from "@/components/screens/PlannerPanel";
 import { ProgressPanel } from "@/components/screens/ProgressPanel";
+import { CornerDownLeft } from 'lucide-react';
 
 
 // import { OverallLine, __PING__ } from "./LineChart";
@@ -271,6 +272,9 @@ export default function DashboardView({
       <Card>
         <CardHeader>
           <CardTitle>Unit Selection</CardTitle>
+          <CardDescription>
+            Choose a unit to load personalised insights and actions.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
@@ -300,7 +304,7 @@ export default function DashboardView({
         </CardContent>
         <CardFooter className="justify-end">
           <CardAction onClick={backAll}>
-            <Button className="cursor-pointer">Back to all units</Button>
+            <Button className="cursor-pointer">Back to all units <CornerDownLeft /></Button>
           </CardAction>
         </CardFooter>
       </Card>
