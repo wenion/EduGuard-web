@@ -1,5 +1,4 @@
 import { useCallback, useMemo, useState } from "react";
-import "@/app/globals.css";
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button";
