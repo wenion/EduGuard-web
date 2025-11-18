@@ -38,11 +38,11 @@ function FeedbackCard({
     <div className={className}>
       <Card>
         <CardHeader>
-          <CardAction className="col-start-1 row-span-2 row-start-1 justify-self-center self-center">
+          <CardTitle className="font-thin">Feedback summary</CardTitle>
+          <CardDescription className="text-lg font-semibold text-black">How you should improve?</CardDescription>
+          <CardAction className="justify-self-center self-center">
             <Lightbulb />
           </CardAction>
-          <CardTitle className="font-thin lg:pr-16">Feedback summary</CardTitle>
-          <CardDescription className="text-lg font-semibold text-black lg:pr-16">How you should improve?</CardDescription>
         </CardHeader>
         <CardContent>
           <Badge variant="secondary" className="py-2">Your Latest Feedback</Badge>
