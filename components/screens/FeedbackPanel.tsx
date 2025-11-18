@@ -137,11 +137,18 @@ export function FeedbackPanel({ feedbackSet, className }: FeedbackPanelProps) {
   }, [feedbackSet.feedback_set]);
 
   const current = useMemo(() => {
-    return feedbackSet.feedback_set.length > 0 ? feedbackSet.feedback_set[index] : null;
+    return feedbackSet.feedback_set.length > 0
+      ? feedbackSet.feedback_set[index]
+      : {
+          id: 0,
+          cur_week: 0,
+          feedback: "",
+          actionable_advice: [],
+          feedforward_actions: [],
+        };
   }, [feedbackSet.feedback_set, index]);
+
   return (
-    <>
-      {current && <FeedbackCard className={className} feedback={current} onPrevious={onPrevious} onNext={onNext} />}
-    </>
+    <FeedbackCard className={className} feedback={current} onPrevious={onPrevious} onNext={onNext} />
   );
 }
