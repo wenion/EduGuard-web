@@ -184,7 +184,7 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
 
   return (
     <div className={className}>
-      <Card>
+      <Card className="h-full">
         <CardHeader>
           <CardTitle className="font-thin uppercase">Action planning</CardTitle>
           <CardDescription className="text-lg font-semibold text-black">How about developing an action plan for improvement?</CardDescription>

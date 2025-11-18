@@ -246,7 +246,7 @@ export function ProgressPanel({ plannerData, className }: ProgressPanelProps) {
 
   return (
     <div className={className}>
-      <Card>
+      <Card className="h-full">
         <CardHeader>
           <CardTitle className="font-thin uppercase">Progress pulse</CardTitle>
           <CardDescription className="text-lg font-semibold text-black">How are you progressing with your plan?</CardDescription>

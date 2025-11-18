@@ -36,7 +36,7 @@ function FeedbackCard({
   };
   return (
     <div className={className}>
-      <Card>
+      <Card className="h-full">
         <CardHeader>
           <CardTitle className="font-thin uppercase">Feedback summary</CardTitle>
           <CardDescription className="text-lg font-semibold text-black">How you should improve?</CardDescription>
@@ -54,7 +54,7 @@ function FeedbackCard({
             To better achieve the learning outcomes for Weeks 0 - {currentWeek}, here are some suggestions that you may find helpful:
           </p>
 
-          <ScrollArea className="h-72 rounded-md border flex mt-4">
+          <ScrollArea className="h-60 rounded-md border flex mt-4">
             <div className="flex w-full flex-col gap-4 my-2 px-2">
               {feedback.actionable_advice.map((advice, index) => {
                 return (
@@ -78,7 +78,7 @@ function FeedbackCard({
             To support your achievement of the learning outcomes for Week {currentWeek + 1}, here are some suggestions:
           </p>
 
-          <ScrollArea className="h-72 rounded-md border flex mt-4">
+          <ScrollArea className="h-60 rounded-md border flex mt-4">
             <div className="flex w-full flex-col gap-4 my-2 px-2">
               {feedback.feedforward_actions.map((action, index) => (
                 <div
