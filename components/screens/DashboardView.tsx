@@ -312,13 +312,13 @@ export default function DashboardView({
       {selectedUnitId && user && (
         <>
           <Tabs defaultValue="insight" className="w-full pt-4">
-            <TabsList className="flex m-auto">
+            <TabsList className="flex m-auto w-full">
               <TabsTrigger value="insight">Learning Progress Insights</TabsTrigger>
               <TabsTrigger value="planner" onClick={loadPrescriptiveData}>How You Can Learn Better?</TabsTrigger>
             </TabsList>
             <TabsContent value="insight">
-              <div className="flex flex-col gap-6">
-                <Card>
+              <div className="flex flex-col lg:flex-row gap-6">
+                <Card className="lg:w-1/3">
                   <CardHeader>
                     <CardTitle>Your overall time engagement in this unit (measured by minutes)</CardTitle>
                   </CardHeader>
@@ -343,7 +343,7 @@ export default function DashboardView({
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="lg:w-1/3">
                   <CardHeader>
                     <CardTitle>Your time engagement with course materials from a specific week (measured by minutes)</CardTitle>
                   </CardHeader>
@@ -384,7 +384,7 @@ export default function DashboardView({
                   </CardFooter>
                 </Card>
 
-                <Card>
+                <Card className="lg:w-1/3">
                   <CardHeader>
                     <CardTitle>Assessment performance</CardTitle>
                   </CardHeader>
