@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
+import { Card, CardAction, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Item } from "@/components/ui/item";
 import { Textarea } from "@/components/ui/textarea"
@@ -10,12 +11,14 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Separator } from "@/components/ui/separator";
 import {
   Plus as PlusIcon,
   Check as CheckIcon,
   Pencil as PencilIcon,
   Trash2 as TrashIcon,
   Save as SaveIcon,
+  SquareKanban as SquareKanbanIcon
 } from "lucide-react";
 
 import { DatePicker } from "@/components/date-picker";
@@ -118,6 +121,14 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
   const [data, setData] = useState<{item: string, date: string}[]>([]);
   const [invalidIndex, setInvalidIndex] = useState<number | null>(null);
 
+  const items = [
+    {title:"S", value: "Make tasks Specific by clearly defining the action and outcome (e.g., “Summarize key points from Week 4 lecture”)."},
+    {title:"M", value: "Ensure tasks are Measurable by including criteria to track completion (e.g., “Write a 1-page summary”)."},
+    {title:"B", value: "Confirm tasks are Achievable by choosing steps you can realistically complete within the time available."},
+    {title:"R", value: "Set Relevant goals that directly support your broader academic or personal objectives."},
+    {title:"T", value: "Assign a Time-bound deadline to each task to stay accountable (e.g., “Complete by Friday at 6 PM”)."}
+  ]
+
   const scrollRef = useRef<HTMLDivElement>(null); // container reference
   const lastItemRef = useRef<HTMLDivElement>(null); // last added item reference
 
@@ -175,18 +186,28 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
     <div className={className}>
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl font-medium">How about developing an action plan for improvement?</CardTitle>
+          <CardTitle className="font-thin">Action planning</CardTitle>
+          <CardDescription className="text-lg font-semibold text-black">How about developing an action plan for improvement?</CardDescription>
+          <CardAction className="justify-self-center self-center">
+            <SquareKanbanIcon />
+          </CardAction>
         </CardHeader>
         <CardContent>
-          <CardDescription className="text-lg">
-            <em>Here, you can outline specific learning activities to support your improvement.</em>
+          <Badge variant="secondary" className="py-2">Set Your Learning Goals</Badge>
+          <CardDescription className="text-lg font-normal text-black font-sans italic pt-2">
+            Outline specific learning activities to support your improvement.
           </CardDescription>
 
-          <p className="text-base text-muted-foreground mt-2">
-            <em>
-              You can drag a suggestion from the previous panel and drop it here, edit it as needed, or create a new one. Be sure to set a target completion date to help track your progress.
-            </em>
-          </p>
+          <ul className="text-base text-muted-foreground mt-2 space-y-2">
+            {items.map((item, index) => (
+              <li key={index}>
+                <b>{item.title}{": "}</b>
+                {item.value}
+              </li>)
+            )}
+          </ul>
+
+          <Separator className="my-4" />
 
           <div className="flex justify-end my-4 gap-4">
             <Button
@@ -217,9 +238,9 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
             <div className="flex w-full flex-col gap-4 my-2 px-2" ref={scrollRef}>
               {data.length === 0 ? (
                 <div
-                  className="flex items-center rounded justify-center border h-56 bg-slate-100 text-2xl select-none"
+                  className="flex items-center rounded justify-center border h-56 bg-slate-100 font-bold text-2xl select-none text-slate-300 uppercase"
                 >
-                  Your Action Plan Item
+                  <p className="mx-16">Drag & Drop a Suggestion or Add Your Own</p>
                 </div>
               ) : (
                 data.map((item, index) => (
