@@ -314,105 +314,100 @@ export default function DashboardView({
           <Tabs defaultValue="insight" className="w-full pt-4">
             <TabsList className="flex m-auto">
               <TabsTrigger value="insight">Learning Progress Insights</TabsTrigger>
-              <TabsTrigger
-                value="planner"
-                onClick={loadPrescriptiveData}
-              >
-                How You Can Learn Better?
-              </TabsTrigger>
+              <TabsTrigger value="planner" onClick={loadPrescriptiveData}>How You Can Learn Better?</TabsTrigger>
             </TabsList>
             <TabsContent value="insight">
               <div className="flex flex-col gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Your overall time engagement in this unit (measured by minutes)</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-80">
-                  {overall ? (
-                    <OverallLine
-                    labels={overall.label}
-                    dUser={overall.user}
-                    lUser="Your time engagement"
-                    dPeers={overall.class}
-                    lPeers="Average time engagement of your peers this semester"
-                    dPrev={overall.pre_semester}
-                    lPrev="Average time engagement of HD & D students in the previous semester"
-                    showPeer={!user.compareWithPeer}
-                    telemetry={handleTelemetry}
-                />
-              ) : (
-              <p className="text-sm text-muted-foreground">Select a unit to load the chart…</p>
-            )}
-          </div>
-          </CardContent>
-          </Card>
-            
-              <Card>
-                <CardHeader>
-                  <CardTitle>Your time engagement with course materials from a specific week (measured by minutes)</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-80">
-                  {weekly ? (
-                    <WeeklyBar
-                      labels={weekly.label}
-                      dUser={weekly.user}
-                      lUser="Your time engagement"
-                      dPeers={weekly.class}
-                      lPeers="Average time engagement of your peers this semester"
-                      dPrev={weekly.pre_semester}
-                      lPrev="Average time engagement of HD & D students in the previous semester"
-                      showPeer={!user.compareWithPeer}
-                      telemetry={handleTelemetry}
-                    />
-                  ) : (
-                    <p className="text-sm text-muted-foreground">Select a unit to load the chart…</p>
-                  )}
-                  </div>
-                </CardContent>
-                <CardFooter className="justify-center">
-                  <Select value={selectedWeek} onValueChange={onChangeSeletor}>
-                    <SelectTrigger className="w-[200px]">
-                      <SelectValue placeholder="Select week" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        {(weekly?.weeks ?? []).map((w, index) => (
-                          <SelectItem key={index} value={w.toString()}>
-                            Week {w}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                </CardFooter>
-              </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Your overall time engagement in this unit (measured by minutes)</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-80">
+                      {overall ? (
+                        <OverallLine
+                          labels={overall.label}
+                          dUser={overall.user}
+                          lUser="Your time engagement"
+                          dPeers={overall.class}
+                          lPeers="Average time engagement of your peers this semester"
+                          dPrev={overall.pre_semester}
+                          lPrev="Average time engagement of HD & D students in the previous semester"
+                          showPeer={!user.compareWithPeer}
+                          telemetry={handleTelemetry}
+                        />
+                      ) : (
+                        <p className="text-sm text-muted-foreground">Select a unit to load the chart…</p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
 
-               <Card>
-        <CardHeader>
-          <CardTitle>Assessment performance</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-80">
-            {assessment ? (
-              <AssessmentBoxplot
-                labels={assessment.label}
-                dUser={assessment.user}              // line data (your performance)
-                lUser="Your assessment performance"
-                dPeers={assessment.class}              // peers (boxplot)
-                lPeers="Overall class performance this semester"
-                dPrev={assessment.pre_semester}       // previous semester (boxplot)
-                lPrev="Overall class performance from the previous semester"
-                showPeer={!user.compareWithPeer}
-                telemetry={handleTelemetry}
-              />
-            ) : (
-              <p className="text-sm text-muted-foreground">Select a unit to load the chart…</p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Your time engagement with course materials from a specific week (measured by minutes)</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-80">
+                      {weekly ? (
+                        <WeeklyBar
+                          labels={weekly.label}
+                          dUser={weekly.user}
+                          lUser="Your time engagement"
+                          dPeers={weekly.class}
+                          lPeers="Average time engagement of your peers this semester"
+                          dPrev={weekly.pre_semester}
+                          lPrev="Average time engagement of HD & D students in the previous semester"
+                          showPeer={!user.compareWithPeer}
+                          telemetry={handleTelemetry}
+                        />
+                      ) : (
+                        <p className="text-sm text-muted-foreground">Select a unit to load the chart…</p>
+                      )}
+                    </div>
+                  </CardContent>
+                  <CardFooter className="justify-center">
+                    <Select value={selectedWeek} onValueChange={onChangeSeletor}>
+                      <SelectTrigger className="w-[200px]">
+                        <SelectValue placeholder="Select week" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          {(weekly?.weeks ?? []).map((w, index) => (
+                            <SelectItem key={index} value={w.toString()}>
+                              Week {w}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </CardFooter>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Assessment performance</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-80">
+                      {assessment ? (
+                        <AssessmentBoxplot
+                          labels={assessment.label}
+                          dUser={assessment.user}              // line data (your performance)
+                          lUser="Your assessment performance"
+                          dPeers={assessment.class}              // peers (boxplot)
+                          lPeers="Overall class performance this semester"
+                          dPrev={assessment.pre_semester}       // previous semester (boxplot)
+                          lPrev="Overall class performance from the previous semester"
+                          showPeer={!user.compareWithPeer}
+                          telemetry={handleTelemetry}
+                        />
+                      ) : (
+                        <p className="text-sm text-muted-foreground">Select a unit to load the chart…</p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </TabsContent>
 
