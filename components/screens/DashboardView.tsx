@@ -314,8 +314,8 @@ export default function DashboardView({
         <>
           <Tabs defaultValue="insight" className="w-full pt-4">
             <TabsList className="flex m-auto w-full">
-              <TabsTrigger value="insight">Learning Progress Insights</TabsTrigger>
-              <TabsTrigger value="planner" onClick={loadPrescriptiveData}>How You Can Learn Better?</TabsTrigger>
+              <TabsTrigger value="insight" className="cursor-pointer">Learning Progress Insights</TabsTrigger>
+              <TabsTrigger value="planner" onClick={loadPrescriptiveData} className="cursor-pointer">How You Can Learn Better?</TabsTrigger>
             </TabsList>
             <TabsContent value="insight">
               <div className="flex flex-col lg:flex-row gap-6">
