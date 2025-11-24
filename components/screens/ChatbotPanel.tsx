@@ -38,6 +38,11 @@ export function ChatbotPanel() {
     setHover(false);
   }
 
+  const refresh = () => {
+    setSessionID(generateSessionId(8));
+    setChatlist([]);
+  }
+
   const generateSessionId = (length: number) =>  {
     // length here is the number of bytes. For a 16-character hex string, use 8 bytes.
     const array = new Uint8Array(length);
@@ -117,7 +122,7 @@ export function ChatbotPanel() {
               Typically replies in under a minute
             </CardDescription>
             <CardAction className="space-x-2">
-              <Button className="cursor-pointer text-white" variant="ghost"><RefreshCwIcon /></Button>
+              <Button className="cursor-pointer text-white" variant="ghost" onClick={refresh}><RefreshCwIcon /></Button>
               <Button className="cursor-pointer text-white" variant="ghost" onClick={close}><XIcon /></Button>
             </CardAction>
           </CardHeader>
