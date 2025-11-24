@@ -15,7 +15,6 @@ import { User as UserIcon } from 'lucide-react';
 
 import { useAuth } from "@/context/AuthContext";
 
-
 export function HeaderDropdownMenu() {
   const { logout, user, switchShowPeerRequest } = useAuth();
 
