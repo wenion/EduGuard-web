@@ -39,6 +39,14 @@ type PlannerProps = {
 function Planner({ index, content, onEdit, onDelete, onDateSelect, isLast, lastRef, invalid }: PlannerProps) {
   const [edit, setEdit] = useState(content.trim() === "" ? true : false);
 
+  const onSave = () => {
+    if (content.trim() === "") {
+      onDelete(index);
+      return;
+    }
+    setEdit(false)
+  };
+
   return (
     <Item
       variant="outline"
@@ -60,7 +68,7 @@ function Planner({ index, content, onEdit, onDelete, onDateSelect, isLast, lastR
                   variant="outline"
                   size="sm"
                   className="flex items-center gap-2 cursor-pointer"
-                  onClick={() => setEdit(false)}
+                  onClick={onSave}
                 >
                   <SaveIcon className="h-4 w-4" />
                 </Button>
