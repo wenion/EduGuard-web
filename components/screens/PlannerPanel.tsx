@@ -129,6 +129,7 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
   const { authorizedFetch, selectedUnitId } = useAuth();
   const [data, setData] = useState<{item: string, date: string}[]>([]);
   const [invalidIndex, setInvalidIndex] = useState<number | null>(null);
+  const [alert, setAlert] = useState<string | null>(null);
 
   const items = [
     {title:"S", value: "Make tasks Specific by clearly defining the action and outcome (e.g., “Summarize key points from Week 4 lecture”)."},
@@ -148,12 +149,24 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
   const onSave = () => {
     for (let i = 0; i < data.length; i++) {
       const item = data[i];
+      if (item.item === "") {
+        setAlert("You have unsaved action plan item(s)!");
 
-      if (!item.item || !item.date) {
+        setTimeout(() => {
+          setAlert(null);
+        }, 3000);
+        return;
+      }
+      if (!item.date) {
         setInvalidIndex(i);
+        setAlert("Please specify an intended completion date for the action plan item!");
 
         const row = document.getElementById(`planner-item-${i}`);
         row?.scrollIntoView({ behavior: "smooth", block: "center" });
+
+        setTimeout(() => {
+          setAlert(null);
+        }, 3000);
         return;
       }
     }
@@ -188,15 +201,6 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
       }
     }, 0);
   };
-
-  useEffect(() => {
-    // if (lastItemRef.current) {
-    //   lastItemRef.current.scrollIntoView({
-    //     behavior: "smooth",
-    //     block: "nearest",
-    //   });
-    // }
-  }, [data]);
 
   const onNew = () => {
     setData((prev) => [...prev, {item: "", date: ""}]);
@@ -263,6 +267,11 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
               <span>Save</span>
             </Button>
           </div>
+          {alert && (
+            <div className="text-red-600 font-semibold mb-4">
+              {alert}
+            </div>
+          )}
 
           <ScrollArea
             className="h-80 rounded-md border flex mt-4"
