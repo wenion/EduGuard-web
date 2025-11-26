@@ -171,6 +171,14 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
     const newDate = e.dataTransfer.getData("text/plain");
     const newItem = {item: newDate, date: ""};
     setData((prev) => [...prev, newItem]);
+    setTimeout(() => {
+      if (lastItemRef.current) {
+        lastItemRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+        });
+      }
+    }, 0);
   };
 
   useEffect(() => {
@@ -181,6 +189,18 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
     //   });
     // }
   }, [data]);
+
+  const onNew = () => {
+    setData((prev) => [...prev, {item: "", date: ""}]);
+    setTimeout(() => {
+      if (lastItemRef.current) {
+        lastItemRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+        });
+      }
+    }, 0);
+  }
 
   const handleDragOver = (e: React.DragEvent) => {
     // Allow drop
@@ -220,7 +240,7 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
               variant="outline"
               size="sm"
               className="flex items-center gap-2 cursor-pointer"
-              onClick={() => setData((prev) => [...prev, {item: "", date: ""}])}
+              onClick={onNew}
             >
               <PlusIcon className="h-4 w-4" />
               <span>New Plan Item</span>
