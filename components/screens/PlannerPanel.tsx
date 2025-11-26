@@ -28,6 +28,7 @@ import { createActionPlanRequest } from "@/lib/authApi";
 type PlannerProps = {
   index: number;
   content: string;
+  onEdit: (index: number, content: string) => void;
   onDelete: (index: number) => void;
   onDateSelect: (date: string) => void;
   isLast?: boolean;
@@ -35,8 +36,14 @@ type PlannerProps = {
   invalid?: boolean;
 };
 
-function Planner({ index, content, onDelete, onDateSelect, isLast, lastRef, invalid }: PlannerProps) {
+function Planner({ index, content, onEdit, onDelete, onDateSelect, isLast, lastRef, invalid }: PlannerProps) {
   const [edit, setEdit] = useState(content === "" ? true : false);
+  const [currentContent, setCurrentContent] = useState(content);
+
+  const onSave = () => {
+    onEdit(index, currentContent);
+    setEdit(false);
+  }
 
   return (
     <Item
@@ -47,9 +54,9 @@ function Planner({ index, content, onDelete, onDateSelect, isLast, lastRef, inva
     >
       <div className="flex w-full gap-2">
         {edit ? (
-          <Textarea defaultValue={content} className="min-w-3/5"/>
+          <Textarea value={currentContent} onChange={(e) => setCurrentContent(e.target.value)} className="min-w-3/5"/>
         ) : (
-          <div className="w-3/4">{content}</div>
+          <div className="w-3/4">{currentContent}</div>
         )}
         {edit ? (
           <div className="flex justify-center items-center px-4">
@@ -59,7 +66,7 @@ function Planner({ index, content, onDelete, onDateSelect, isLast, lastRef, inva
                   variant="outline"
                   size="sm"
                   className="flex items-center gap-2 cursor-pointer"
-                  onClick={() => setEdit(false)}
+                  onClick={() => onSave()}
                 >
                   <SaveIcon className="h-4 w-4" />
                 </Button>
@@ -141,7 +148,6 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
       const item = data[i];
 
       if (!item.item || !item.date) {
-        console.log("Item or date is empty for index", i);
         setInvalidIndex(i);
 
         const row = document.getElementById(`planner-item-${i}`);
@@ -158,6 +164,12 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
         console.error("Failed to save action plan data:", e);
       }
     }
+  }
+
+  const onUpdate = (index: number, content: string) => {
+    const newData = [...data];
+    newData[index].item = content;
+    setData(newData);
   }
 
   const handleDrop = (e: React.DragEvent) => {
@@ -248,6 +260,7 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
                     key={index}
                     index={index}
                     content={item.item}
+                    onEdit={(index, content) => onUpdate(index, content)}
                     onDelete={(index) => onDelete(index)}
                     onDateSelect={(date: string) => {item.date = date; if (invalidIndex === index) {setInvalidIndex(null)}}}
                     isLast={index === data.length - 1}

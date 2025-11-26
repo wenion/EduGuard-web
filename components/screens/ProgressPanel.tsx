@@ -209,6 +209,7 @@ export function ProgressPanel({ plannerData, className }: ProgressPanelProps) {
   const [filter, setFilter] = useState<FilterType>("all");
 
   useEffect(() => {
+    console.log("plannerData changed:", plannerData);
     setData(plannerData);
   }, [plannerData]);
 
