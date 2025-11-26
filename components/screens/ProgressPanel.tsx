@@ -137,7 +137,7 @@ function ProgressCard({ action, onCompleted, onDeteled }: ProgressCardProps) {
       <ItemContent>
         {!action.status ? (
           <div className="flex flex-col">
-            <div className="flex">
+            <div className="flex justify-between">
               <div>
                 <ItemTitle>{action.action_content}</ItemTitle>
                 <ItemDescription className="italic">
