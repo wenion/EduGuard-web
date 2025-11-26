@@ -51,7 +51,7 @@ function FeedbackCard({
           </CardDescription>
 
           <p className="text-base text-muted-foreground mt-2 italic">
-            To better achieve the learning outcomes for Weeks 0 - {currentWeek}, here are some suggestions that you may find helpful:
+            To better achieve the learning outcomes for Weeks 1 - {currentWeek}, here are some suggestions that you may find helpful:
           </p>
 
           <ScrollArea className="h-60 rounded-md border flex mt-4">
