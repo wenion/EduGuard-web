@@ -37,13 +37,7 @@ type PlannerProps = {
 };
 
 function Planner({ index, content, onEdit, onDelete, onDateSelect, isLast, lastRef, invalid }: PlannerProps) {
-  const [edit, setEdit] = useState(content === "" ? true : false);
-  const [currentContent, setCurrentContent] = useState(content);
-
-  const onSave = () => {
-    onEdit(index, currentContent);
-    setEdit(false);
-  }
+  const [edit, setEdit] = useState(content.trim() === "" ? true : false);
 
   return (
     <Item
@@ -54,9 +48,9 @@ function Planner({ index, content, onEdit, onDelete, onDateSelect, isLast, lastR
     >
       <div className="flex w-full gap-2">
         {edit ? (
-          <Textarea value={currentContent} onChange={(e) => setCurrentContent(e.target.value)} className="min-w-3/5"/>
+          <Textarea value={content} onChange={(e) => onEdit(index, e.target.value)} className="min-w-3/5"/>
         ) : (
-          <div className="w-3/4">{currentContent}</div>
+          <div className="w-3/4">{content}</div>
         )}
         {edit ? (
           <div className="flex justify-center items-center px-4">
@@ -66,7 +60,7 @@ function Planner({ index, content, onEdit, onDelete, onDateSelect, isLast, lastR
                   variant="outline"
                   size="sm"
                   className="flex items-center gap-2 cursor-pointer"
-                  onClick={() => onSave()}
+                  onClick={() => setEdit(false)}
                 >
                   <SaveIcon className="h-4 w-4" />
                 </Button>
@@ -180,12 +174,12 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
   };
 
   useEffect(() => {
-    if (lastItemRef.current) {
-      lastItemRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-      });
-    }
+    // if (lastItemRef.current) {
+    //   lastItemRef.current.scrollIntoView({
+    //     behavior: "smooth",
+    //     block: "nearest",
+    //   });
+    // }
   }, [data]);
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -243,14 +237,14 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
           </div>
 
           <ScrollArea
-            className="h-60 rounded-md border flex mt-4"
+            className="h-80 rounded-md border flex mt-4"
             onDrop={(e) => handleDrop(e)}
             onDragOver={handleDragOver}
           >
             <div className="flex w-full flex-col gap-4 my-2 px-2" ref={scrollRef}>
               {data.length === 0 ? (
                 <div
-                  className="flex items-center rounded justify-center border h-56 bg-slate-100 font-bold text-2xl select-none text-slate-300 uppercase"
+                  className="flex items-center rounded justify-center border h-76 bg-slate-100 font-bold text-2xl select-none text-slate-300 uppercase"
                 >
                   <p className="mx-16">Drag & Drop a Suggestion or Add Your Own</p>
                 </div>
