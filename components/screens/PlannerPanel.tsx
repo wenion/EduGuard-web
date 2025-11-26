@@ -124,7 +124,7 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
   const items = [
     {title:"S", value: "Make tasks Specific by clearly defining the action and outcome (e.g., “Summarize key points from Week 4 lecture”)."},
     {title:"M", value: "Ensure tasks are Measurable by including criteria to track completion (e.g., “Write a 1-page summary”)."},
-    {title:"B", value: "Confirm tasks are Achievable by choosing steps you can realistically complete within the time available."},
+    {title:"A", value: "Confirm tasks are Achievable by choosing steps you can realistically complete within the time available."},
     {title:"R", value: "Set Relevant goals that directly support your broader academic or personal objectives."},
     {title:"T", value: "Assign a Time-bound deadline to each task to stay accountable (e.g., “Complete by Friday at 6 PM”)."}
   ]
