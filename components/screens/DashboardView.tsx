@@ -417,7 +417,7 @@ export default function DashboardView({
             </TabsContent>
 
             <TabsContent value="planner">
-              <div className="flex flex-col lg:flex-row gap-6 h-screen">
+              <div className="flex flex-col lg:flex-row gap-6 lg:h-[80rem] xl:h-[72rem] 2xl:h-[66rem]">
                 <FeedbackPanel feedbackSet={data} className="lg:w-1/3 h-full" />
                 <PlannerPanel onAddPlanner={onAddPlanner} className="lg:w-1/3 h-full" />
                 <ProgressPanel plannerData ={plannerData} className="lg:w-1/3 h-full" />
