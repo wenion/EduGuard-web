@@ -427,7 +427,7 @@ export default function DashboardView({
         </>
       )}
 
-      <ChatbotPanel />
+      {selectedUnitId && (<ChatbotPanel />)}
     </>
   );
 }
