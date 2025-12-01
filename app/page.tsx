@@ -23,11 +23,10 @@ export default function App() {
       {/* Screen rendering */}
       {screen === "home" && <HomeView setScreen={setScreen} />}
       {screen === "dashboard" &&
-        isAuthenticated ? (
-          <div className="mx-4">
-            <DashboardView />
-          </div>
-        ) : <LoginView />}
+        <main id="mainContent" attr-class="body-container" className="mx-4">
+          {isAuthenticated ? <DashboardView /> : <LoginView /> }
+        </main>
+      }
       {screen === "settings" && <SettingsView />}
     </div>
   );
