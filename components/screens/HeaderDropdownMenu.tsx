@@ -14,10 +14,12 @@ import { Switch } from "@/components/ui/switch"
 import { User as UserIcon } from 'lucide-react';
 
 import { useAuth } from "@/context/AuthContext";
+import { Button } from "../ui/button";
 
 export function HeaderDropdownMenu() {
   const { logout, user, switchShowPeerRequest } = useAuth();
 
+  const [open, setOpen] = useState(false);
   const [compare, setCompare] = useState(false);
   useEffect(() => {
     if (user) {
@@ -31,32 +33,77 @@ export function HeaderDropdownMenu() {
   };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <UserIcon className="cursor-pointer" />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="start">
-        <DropdownMenuGroup>
+    <div id="userInfo" role="navigation" aria-label="Account actions">
+      <DropdownMenu open={open} onOpenChange={setOpen}>
+        <DropdownMenuTrigger className="cursor-pointer" asChild>
+          <Button
+            id="userIconButton"
+            variant="ghost"
+            attr-class="btn btn-usr dropdown-toggle show"
+            data-bs-toggle="dropdown"
+          >
+            <UserIcon id="userIcon" className="cursor-pointer" />
+            <span className="sr-only">Open user menu</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent id="userMenu" className="w-56" align="start">
+          <DropdownMenuGroup>
+            <DropdownMenuItem className="italic">
+              <p id="userDetail" attr-class="dropdown-header">
+                {`${user ? `Hi, ${user?.name}` : "Welcome! Please log in first!"}`}
+              </p>
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
+          {user && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DropdownMenuItem
+                  id="peerCompareToggleContainer"
+                  onClick={(e)=> e.preventDefault()}
+                >
+                  <div id="peerCompareToggleDiv" className="flex items-center w-full">
+                    <span>Compare with Peer</span>
+                    <Switch
+                      id="peerCompareToggle"
+                      checked={compare}
+                      onCheckedChange={() => setShowPeer(!compare)}
+                      className="ml-auto"
+                    />
+                  </div>
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </>
+          )}
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            disabled={!user?.name}
+            attr-class="dropdown-item usr-options func-btn"
+          >
+            <Button
+              variant="ghost"
+              id="sidePanelRefreshButton"
+              className="p-0 text-sm font-normal h-fit w-full justify-start"
+              disabled={!user?.name}
+              attr-class="dropdown-item usr-options func-btn"
+            >
+              Refresh Data
+            </Button>
+          </DropdownMenuItem>
           <DropdownMenuItem>
-            Hi {user?.name}!
+            <Button
+              variant="ghost"
+              id="sidePanelLogoutButton"
+              className="p-0 text-sm font-normal h-fit w-full justify-start"
+              onClick={logout}
+              disabled={!user?.name}
+              attr-class="dropdown-item usr-options"
+            >
+              Log Out
+            </Button>
           </DropdownMenuItem>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuItem onClick={(e)=> e.preventDefault()}>
-            Compare with Peer
-            <Switch
-              id="airplane-mode"
-              checked={compare}
-              onCheckedChange={() => setShowPeer(!compare)}
-              className="ml-auto"
-            />
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem>Refresh Data</DropdownMenuItem>
-        <DropdownMenuItem onClick={logout}>Log Out</DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   )
 }
