@@ -1,4 +1,5 @@
 import type { LoginResponse } from "@/types/Auth";
+import type { Trace } from "@/types/Trace";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE!;
 
@@ -215,6 +216,32 @@ export async function sendChat(
     } catch {
       /* ignore */
       return {message: "An error occurred. Please try again later.", timestamp: new Date().toLocaleTimeString()};
+    }
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
+export async function sendLog(
+  authorizedFetch: any,
+  TraceData: {data: Trace, timestamp: number}[],
+): Promise<{ message: string }> {
+  const res = await authorizedFetch(`${API_BASE}/logger/log`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+    },
+    body: JSON.stringify(TraceData),
+  });
+
+  if (!res.ok) {
+    let msg = `Failed to send log data (HTTP ${res.status})`;
+    try {
+      const j = await res.json();
+      msg = j?.message || msg;
+    } catch {
+      /* ignore */
     }
     throw new Error(msg);
   }
