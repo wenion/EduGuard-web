@@ -37,6 +37,16 @@ export function AssessmentBoxplot({
   const data = useMemo(() => ({
     labels,
     datasets: [
+      {
+        type: "line" as const,
+        label: lUser,
+        data: dUser,
+        pointStyle: 'triangle',
+        pointRadius: 8,
+        backgroundColor: "rgba(220, 118, 51, 0.8)",
+        borderDash: [5, 5],
+        borderColor: "rgba(220, 118, 51, 0.5)"
+      },
       { 
         type: "boxplot" as const, 
         label: lPeers, 
@@ -46,8 +56,8 @@ export function AssessmentBoxplot({
         borderWidth: 3,
         borderRadius: 5,
         outlierColor: 'rgba(105, 105, 105, 1)',
-        itemRadius: 2,},
-
+        itemRadius: 2,
+      },
       { 
         type: "boxplot" as const, 
         label: lPrev,  
@@ -59,17 +69,6 @@ export function AssessmentBoxplot({
         outlierColor: "rgba(105, 105, 105, 1)",
         itemRadius: 2 
       },
-
-      { 
-        type: "line" as const,    
-        label: lUser,  
-        data: dUser, 
-        pointStyle: 'triangle',
-        pointRadius: 8,
-        backgroundColor: "rgba(220, 118, 51, 0.8)",
-        borderDash: [5, 5],
-        borderColor: "rgba(220, 118, 51, 0.5)"
-      }
     ],
   }), [labels, dUser, lUser, dPeers, lPeers, dPrev, lPrev, showPeer]);
 
@@ -112,8 +111,41 @@ export function AssessmentBoxplot({
           telemetry?.onLegendToggle?.(legendItem.text, !meta.hidden);
         },
       },
-      //tooltip: { intersect: false, mode: "index" as const },
-      tooltip: { enabled: true, intersect: false, mode: "nearest" }
+      tooltip: {
+        enabled: true,
+        intersect: false,
+        mode: "nearest",
+        callbacks: {
+          label: (context) => {
+            const dataset = context.dataset;
+            const label = dataset.label || '';
+
+            if (label === "Your assessment performance") {
+              return `${label}: ${context.parsed.y}`;
+            }
+
+            const v = context.parsed as any;
+            if (!v) return 'unparsed data';
+
+            const min = context.parsed.min;
+            const max = context.parsed.max;
+            const q1 = context.parsed.q1;
+            const median = context.parsed.median.toFixed(3);
+            const mean = context.parsed.mean.toFixed(3);
+            const q3 = context.parsed.q3;
+
+            return [
+              `${label}: `,
+              `min: ${min}`,
+              `25% quantile: ${q1}`,
+              `median: ${median}`,
+              `mean: ${mean}`,
+              `75% quantile: ${q3}`,
+              `max: ${max}`,
+            ];
+          },
+        },
+      }
     },
 
     onHover(_event, activeElements) {
@@ -134,6 +166,6 @@ export function AssessmentBoxplot({
     },
   }), [telemetry]);
 
-  return <div className="h-72"><Chart type="boxplot" data={data as any} options={options as any} id="assessmentCanvas"/></div>;
+  return <Chart type="boxplot" data={data as any} options={options as any} id="assessmentCanvas"/>;
 }
 

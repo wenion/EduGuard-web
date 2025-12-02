@@ -427,15 +427,15 @@ export default function DashboardView({
                   </CardFooter>
                 </Card>
 
-                <Card className="lg:w-1/3" aria-labelledby="assessmentHeading">
-                  <CardHeader>
-                    <CardTitle>
-                      <h2 id="assessmentHeading">Assessment Mark Distributions</h2>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-80">
-                      {assessment ? (
+                {assessment && (
+                  <Card className="lg:w-1/3" aria-labelledby="assessmentHeading">
+                    <CardHeader>
+                      <CardTitle>
+                        <h2 id="assessmentHeading">Assessment Mark Distributions</h2>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-80">
                         <AssessmentBoxplot
                           labels={assessment.label}
                           dUser={assessment.user}              // line data (your performance)
@@ -447,12 +447,10 @@ export default function DashboardView({
                           showPeer={!user.compareWithPeer}
                           telemetry={handleTelemetry}
                         />
-                      ) : (
-                        <p className="text-sm text-muted-foreground">Select a unit to load the chart…</p>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             </TabsContent>
 

@@ -170,7 +170,7 @@ function ProgressCard({ index, action, onCompleted, onDeteled }: ProgressCardPro
               <Button
                 variant="outline"
                 size="sm"
-                className="flex items-center gap-2 border border-green-50 cursor-pointer hover:bg-green-50 text-green-400"
+                className="flex items-center gap-2 border border-green-50 cursor-pointer hover:bg-green-50 text-green-400 rounded-full"
                 attr-class="btn insight-control success ct-btn"
                 data-list-item={`plannedItem${index}`}
                 data-db-id={`${action.id}`}
@@ -183,7 +183,7 @@ function ProgressCard({ index, action, onCompleted, onDeteled }: ProgressCardPro
               <Button
                 variant="outline"
                 size="sm"
-                className="flex items-center gap-2 cursor-pointer border border-orange-100 hover:bg-orange-100 text-orange-400"
+                className="flex items-center gap-2 cursor-pointer border border-orange-100 hover:bg-orange-100 text-orange-400 rounded-full"
                 attr-class="btn insight-control warning cl-btn"
                 data-list-item={`plannedItem${index}`}
                 data-db-id={`${action.id}`}

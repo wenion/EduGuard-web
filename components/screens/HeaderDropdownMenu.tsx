@@ -50,7 +50,7 @@ export function HeaderDropdownMenu() {
           <DropdownMenuGroup>
             <DropdownMenuItem className="italic">
               <p id="userDetail" attr-class="dropdown-header">
-                {`${user ? `Hi, ${user?.name}` : "Welcome! Please log in first!"}`}
+                {`${user ? `Hi! ${user?.name}` : "Welcome! Please log in first!"}`}
               </p>
             </DropdownMenuItem>
           </DropdownMenuGroup>
@@ -83,7 +83,7 @@ export function HeaderDropdownMenu() {
             <Button
               variant="ghost"
               id="sidePanelRefreshButton"
-              className="p-0 text-sm font-normal h-fit w-full justify-start"
+              className="p-0 text-sm font-normal h-fit w-full justify-start cursor-pointer"
               disabled={!user?.name}
               attr-class="dropdown-item usr-options func-btn"
             >
@@ -94,7 +94,7 @@ export function HeaderDropdownMenu() {
             <Button
               variant="ghost"
               id="sidePanelLogoutButton"
-              className="p-0 text-sm font-normal h-fit w-full justify-start"
+              className="p-0 text-sm font-normal h-fit w-full justify-start cursor-pointer"
               onClick={logout}
               disabled={!user?.name}
               attr-class="dropdown-item usr-options"

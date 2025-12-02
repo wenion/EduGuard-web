@@ -67,7 +67,7 @@ export default function LoginForm() {
             {loading ? (
               <span className="inline-flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Signing in…
+                Logging in…
               </span>
             ) : (
               "Login"
