@@ -214,13 +214,13 @@ export default function DashboardView({
 
   const handleTelemetry = {
     onLegendClick: (e: { datasetIndex: number; text: string; visible: boolean }) => {
-      console.log("Legend click:", e);
+      // console.log("Legend click:", e);
     },
     onHover: (e: { datasetIndex: number; index: number; label: string }) => {
-      console.log("Hover:", e);
+      // console.log("Hover:", e);
     },
     onDataClick: (e: { datasetIndex: number; index: number; label: string }) => {
-      console.log("Click:", e);
+      // console.log("Click:", e);
     },
   };
 

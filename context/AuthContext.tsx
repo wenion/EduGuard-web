@@ -215,7 +215,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     logout,
     authorizedFetch,
     switchShowPeerRequest,
-  }), [token, user, genaiAccess, expiresAt, loading, error, selectedUnitId]);
+  }), [token, user, genaiAccess, expiresAt, loading, error, selectedUnitId, sessionID]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
