@@ -95,6 +95,14 @@ export default function DashboardView({
     loadAnalyticalData(u.unit_id);
   };
 
+  const onLoadAnalyticalData = () => {
+    if (!selectedUnitId) {
+      console.error("No unit selected.");
+      return;
+    }
+    loadAnalyticalData(selectedUnitId);
+  };
+
   const backAll = () => {
     setUnitId(null);
     onUnitSelect?.(null);
@@ -134,6 +142,10 @@ export default function DashboardView({
     } catch (e: any) {
       console.error("Failed to load action plan data:", e);
     }
+  };
+
+  const onAddPlanner = () => {
+    setTimeout(loadActionPlan, 1000);
   };
 
   const loadAnalyticalData = (unit: number) => {
@@ -270,23 +282,24 @@ export default function DashboardView({
 
   return (
     <>
-      <Card>
+      <Card id="contentPanel" attr-class="hide" role="region" aria-live="polite">
         <CardHeader>
-          <CardTitle>Unit Selection</CardTitle>
-          <CardDescription>
+          <CardTitle id="unitSelectionHeading">Unit Selection</CardTitle>
+          <CardDescription attr-class="section-subtitle">
             Choose a unit to load personalised insights and actions.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
-            <TableHeader>
+            <caption className="sr-only">Available units with learning insights</caption>
+            <TableHeader attr-class="table-light">
               <TableRow>
                 <TableHead>Unit Code</TableHead>
                 <TableHead>Unit Name</TableHead>
                 <TableHead>Semester</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
+            <TableBody id="unitList">
               {units.map((unit) => (
                 <TableRow
                   className="cursor-pointer unit-select"
@@ -303,25 +316,48 @@ export default function DashboardView({
             </TableBody>
           </Table>
         </CardContent>
-        <CardFooter className="justify-end">
-          <CardAction onClick={backAll}>
-            <Button className="cursor-pointer">Back to all units <CornerDownLeft /></Button>
-          </CardAction>
-        </CardFooter>
+        {selectedUnitId && (
+          <CardFooter className="justify-end">
+            <CardAction onClick={backAll}>
+              <Button className="cursor-pointer" id="all-unit-btn">Back to all units <CornerDownLeft /></Button>
+            </CardAction>
+          </CardFooter>
+        )}
       </Card>
 
       {selectedUnitId && user && (
         <>
           <Tabs defaultValue="insight" className="w-full pt-4">
-            <TabsList className="flex m-auto w-full">
-              <TabsTrigger value="insight">Learning Progress Insights</TabsTrigger>
-              <TabsTrigger value="planner" onClick={loadPrescriptiveData}>How You Can Learn Better?</TabsTrigger>
+            <TabsList className="flex m-auto w-full" id="insight-select-container" role="tablist" aria-label="Insight families">
+              <TabsTrigger value="insight" asChild>
+                <Button
+                  variant="ghost"
+                  id="engagement-tab-nav"
+                  className="cursor-pointer hover:bg-transparent"
+                  onClick={onLoadAnalyticalData}
+                >
+                  Learning Progress Insights
+                </Button>
+              </TabsTrigger>
+              <TabsTrigger value="planner" asChild>
+                <Button
+                  variant="ghost"
+                  id="performance-tab-nav"
+                  className="cursor-pointer hover:bg-transparent"
+                  aria-controls="prescriptive-insights"
+                  onClick={loadPrescriptiveData}
+                >
+                  How You Can Learn Better?
+                </Button>
+              </TabsTrigger>
             </TabsList>
             <TabsContent value="insight">
-              <div className="flex flex-col lg:flex-row gap-6">
-                <Card className="lg:w-1/3">
+              <div className="flex flex-col lg:flex-row gap-6" id="analytical-insights">
+                <Card className="lg:w-1/3" aria-labelledby="overallEngagementHeading">
                   <CardHeader>
-                    <CardTitle>Your overall time engagement in this unit (measured by minutes)</CardTitle>
+                    <CardTitle>
+                      <h2 id="overallEngagementHeading">Your overall time engagement in this unit (measured by minutes)</h2>
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="h-80">
@@ -344,9 +380,11 @@ export default function DashboardView({
                   </CardContent>
                 </Card>
 
-                <Card className="lg:w-1/3">
+                <Card className="lg:w-1/3" aria-labelledby="weeklyEngagementHeading">
                   <CardHeader>
-                    <CardTitle>Your time engagement with course materials from a specific week (measured by minutes)</CardTitle>
+                    <CardTitle>
+                      <h2 id="weeklyEngagementHeading">Your time engagement with course materials from a specific week (measured by minutes)</h2>
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="h-80">
@@ -369,7 +407,11 @@ export default function DashboardView({
                   </CardContent>
                   <CardFooter className="justify-center">
                     <Select value={selectedWeek} onValueChange={onChangeSeletor}>
-                      <SelectTrigger className="w-[200px]">
+                      <SelectTrigger
+                        id="week-selector"
+                        aria-label="Select a teaching week"
+                        className="w-[200px]"
+                      >
                         <SelectValue placeholder="Select week" />
                       </SelectTrigger>
                       <SelectContent>
@@ -385,13 +427,15 @@ export default function DashboardView({
                   </CardFooter>
                 </Card>
 
-                <Card className="lg:w-1/3">
-                  <CardHeader>
-                    <CardTitle>Assessment performance</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-80">
-                      {assessment ? (
+                {assessment && (
+                  <Card className="lg:w-1/3" aria-labelledby="assessmentHeading">
+                    <CardHeader>
+                      <CardTitle>
+                        <h2 id="assessmentHeading">Assessment Mark Distributions</h2>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-80">
                         <AssessmentBoxplot
                           labels={assessment.label}
                           dUser={assessment.user}              // line data (your performance)
@@ -403,19 +447,17 @@ export default function DashboardView({
                           showPeer={!user.compareWithPeer}
                           telemetry={handleTelemetry}
                         />
-                      ) : (
-                        <p className="text-sm text-muted-foreground">Select a unit to load the chart…</p>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             </TabsContent>
 
             <TabsContent value="planner">
-              <div className="flex flex-col lg:flex-row gap-6 h-screen">
+              <div className="flex flex-col lg:flex-row gap-6 lg:h-[80rem] xl:h-[72rem] 2xl:h-[66rem]" id="prescriptive-insights">
                 <FeedbackPanel feedbackSet={data} className="lg:w-1/3 h-full" />
-                <PlannerPanel onAddPlanner={loadActionPlan} className="lg:w-1/3 h-full" />
+                <PlannerPanel onAddPlanner={onAddPlanner} className="lg:w-1/3 h-full" />
                 <ProgressPanel plannerData ={plannerData} className="lg:w-1/3 h-full" />
               </div>
             </TabsContent>
@@ -423,7 +465,7 @@ export default function DashboardView({
         </>
       )}
 
-      <ChatbotPanel />
+      {selectedUnitId && (<ChatbotPanel />)}
     </>
   );
 }

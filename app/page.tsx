@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { useAuth } from "@/context/AuthContext";
+import { useEventTracking } from "@/context/Logger";
 
 import Header from "@/components/screens/Header";
 import LoginView from "@/components/screens/LoginView";
@@ -15,6 +16,7 @@ type Screen = "home" | "dashboard" | "settings";
 export default function App() {
   const [screen, setScreen] = useState<Screen>("dashboard");
   const { isAuthenticated, user, logout } = useAuth();
+  useEventTracking();
 
   return (
     <div className="space-y-6">
@@ -23,11 +25,10 @@ export default function App() {
       {/* Screen rendering */}
       {screen === "home" && <HomeView setScreen={setScreen} />}
       {screen === "dashboard" &&
-        isAuthenticated ? (
-          <div className="mx-4">
-            <DashboardView />
-          </div>
-        ) : <LoginView />}
+        <main id="mainContent" attr-class="body-container" className="mx-4">
+          {isAuthenticated ? <DashboardView /> : <LoginView /> }
+        </main>
+      }
       {screen === "settings" && <SettingsView />}
     </div>
   );

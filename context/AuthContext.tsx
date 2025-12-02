@@ -13,6 +13,8 @@ type AuthState = {
   error: string | null;
   selectedUnitId: number | null;
   setUnitId: (unitId: number | null) => void;
+  sessionID: string | null;
+  setSessionID: (sessionID: string | null) => void;
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
   authorizedFetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
@@ -59,6 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const [selectedUnitId, setSelectedUnitId] = useState<number | null>(null);
   const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
+  const [sessionID, setSessionID] = useState<string | null>(null);
 
   const clearExpiryTimer = () => {
     if (expiryTimer.current) {
@@ -206,6 +209,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     error: error,
     selectedUnitId,
     setUnitId,
+    sessionID,
+    setSessionID,
     login,
     logout,
     authorizedFetch,

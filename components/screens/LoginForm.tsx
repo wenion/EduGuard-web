@@ -22,30 +22,31 @@ export default function LoginForm() {
   };
 
   return (
-    <Card className="w-full max-w-sm">
-      <CardHeader>
-        <CardTitle className="text-xl">Sign in</CardTitle>
+    <Card className="w-full max-w-sm" id="loginArea">
+      <CardHeader id="innerLogin">
+        <CardTitle className="text-xl" id="loginTitle">Login</CardTitle>
       </CardHeader>
 
-      <form onSubmit={onSubmit} className="space-y-3">
+      <form onSubmit={onSubmit} className="space-y-3" id="loginForm">
         <CardContent className="space-y-3">
           <div className="grid gap-1.5">
-            <Label htmlFor="username">Username</Label>
+            <Label htmlFor="loginUsername">Email</Label>
             <Input
-              id="username"
-              placeholder="Username"
+              id="loginUsername"
+              placeholder="name@example.com"
               value={username}
               onChange={(e) => setU(e.target.value)}
               disabled={loading}
               autoComplete="username"
             />
+            <span className="text-sm pb-4 text-slate-500" id="loginHelper">Use your institutional email address.</span>
           </div>
 
           <div className="grid gap-1.5">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="loginPassword">Password</Label>
             <Input
-              id="password"
-              placeholder="Password"
+              id="loginPassword"
+              placeholder="Your Password here"
               type="password"
               value={password}
               onChange={(e) => setP(e.target.value)}
@@ -62,14 +63,14 @@ export default function LoginForm() {
         </CardContent>
 
         <CardFooter>
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button type="submit" className="w-full" disabled={loading} id="loginButton">
             {loading ? (
               <span className="inline-flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Signing in…
+                Logging in…
               </span>
             ) : (
-              "Sign in"
+              "Login"
             )}
           </Button>
         </CardFooter>

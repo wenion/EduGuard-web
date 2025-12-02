@@ -26,28 +26,37 @@ import { useAuth } from "@/context/AuthContext";
 import { createActionPlanRequest } from "@/lib/authApi";
 
 type PlannerProps = {
+  id: string;
   index: number;
   content: string;
+  onEdit: (index: number, content: string) => void;
   onDelete: (index: number) => void;
   onDateSelect: (date: string) => void;
   isLast?: boolean;
-  lastRef?: React.Ref<HTMLDivElement>;
+  lastRef?: React.Ref<HTMLLIElement>;
   invalid?: boolean;
 };
 
-function Planner({ index, content, onDelete, onDateSelect, isLast, lastRef, invalid }: PlannerProps) {
-  const [edit, setEdit] = useState(content === "" ? true : false);
+function Planner({ id, index, content, onEdit, onDelete, onDateSelect, isLast, lastRef, invalid }: PlannerProps) {
+  const [edit, setEdit] = useState(content.trim() === "" ? true : false);
+
+  const onSave = () => {
+    if (content.trim() === "") {
+      onDelete(index);
+      return;
+    }
+    setEdit(false)
+  };
 
   return (
-    <Item
-      variant="outline"
-      className="flex items-center justify-between border h-fit"
+    <li
+      className="flex items-center justify-between border rounded p-4 h-fit"
       ref={isLast ? lastRef : undefined}
-      id = {`planner-item-${index}`}
+      id={id}
     >
       <div className="flex w-full gap-2">
         {edit ? (
-          <Textarea defaultValue={content} className="min-w-3/5"/>
+          <Textarea value={content} onChange={(e) => onEdit(index, e.target.value)} className="min-w-3/5"/>
         ) : (
           <div className="w-3/4">{content}</div>
         )}
@@ -59,7 +68,7 @@ function Planner({ index, content, onDelete, onDateSelect, isLast, lastRef, inva
                   variant="outline"
                   size="sm"
                   className="flex items-center gap-2 cursor-pointer"
-                  onClick={() => setEdit(false)}
+                  onClick={onSave}
                 >
                   <SaveIcon className="h-4 w-4" />
                 </Button>
@@ -71,7 +80,7 @@ function Planner({ index, content, onDelete, onDateSelect, isLast, lastRef, inva
           </div>
         ) : (
           <div className="flex flex-col">
-            <DatePicker onDateChanged={onDateSelect} className="" invalid={invalid}/>
+            <DatePicker onDateChanged={onDateSelect} className="" invalid={invalid} id={`date-actionPlanItem${index}`}/>
             <div className="flex justify-center gap-4 my-4">
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -107,7 +116,7 @@ function Planner({ index, content, onDelete, onDateSelect, isLast, lastRef, inva
           </div>
         )}
       </div>
-    </Item>
+    </li>
   )
 }
 
@@ -120,32 +129,51 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
   const { authorizedFetch, selectedUnitId } = useAuth();
   const [data, setData] = useState<{item: string, date: string}[]>([]);
   const [invalidIndex, setInvalidIndex] = useState<number | null>(null);
+  const [alert, setAlert] = useState<string | null>(null);
 
   const items = [
     {title:"S", value: "Make tasks Specific by clearly defining the action and outcome (e.g., “Summarize key points from Week 4 lecture”)."},
     {title:"M", value: "Ensure tasks are Measurable by including criteria to track completion (e.g., “Write a 1-page summary”)."},
-    {title:"B", value: "Confirm tasks are Achievable by choosing steps you can realistically complete within the time available."},
+    {title:"A", value: "Confirm tasks are Achievable by choosing steps you can realistically complete within the time available."},
     {title:"R", value: "Set Relevant goals that directly support your broader academic or personal objectives."},
     {title:"T", value: "Assign a Time-bound deadline to each task to stay accountable (e.g., “Complete by Friday at 6 PM”)."}
   ]
 
-  const scrollRef = useRef<HTMLDivElement>(null); // container reference
-  const lastItemRef = useRef<HTMLDivElement>(null); // last added item reference
+  const scrollRef = useRef<HTMLUListElement>(null); // container reference
+  const lastItemRef = useRef<HTMLLIElement>(null); // last added item reference
 
   const onDelete = (index: number) => {
     setData((prev) => prev.filter((_, i) => i !== index));
   }
 
   const onSave = () => {
+    if (data.length === 0) {
+      setAlert("No action plan item to save!");
+      setTimeout(() => {
+        setAlert(null);
+      }, 3000);
+      return;
+    }
     for (let i = 0; i < data.length; i++) {
       const item = data[i];
+      if (item.item === "") {
+        setAlert("You have unsaved action plan item(s)!");
 
-      if (!item.item || !item.date) {
-        console.log("Item or date is empty for index", i);
+        setTimeout(() => {
+          setAlert(null);
+        }, 3000);
+        return;
+      }
+      if (!item.date) {
         setInvalidIndex(i);
+        setAlert("Please specify an intended completion date for the action plan item!");
 
         const row = document.getElementById(`planner-item-${i}`);
         row?.scrollIntoView({ behavior: "smooth", block: "center" });
+
+        setTimeout(() => {
+          setAlert(null);
+        }, 3000);
         return;
       }
     }
@@ -160,21 +188,38 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
     }
   }
 
+  const onUpdate = (index: number, content: string) => {
+    const newData = [...data];
+    newData[index].item = content;
+    setData(newData);
+  }
+
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     const newDate = e.dataTransfer.getData("text/plain");
     const newItem = {item: newDate, date: ""};
     setData((prev) => [...prev, newItem]);
+    setTimeout(() => {
+      if (lastItemRef.current) {
+        lastItemRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+        });
+      }
+    }, 0);
   };
 
-  useEffect(() => {
-    if (lastItemRef.current) {
-      lastItemRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-      });
-    }
-  }, [data]);
+  const onNew = () => {
+    setData((prev) => [...prev, {item: "", date: ""}]);
+    setTimeout(() => {
+      if (lastItemRef.current) {
+        lastItemRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+        });
+      }
+    }, 0);
+  }
 
   const handleDragOver = (e: React.DragEvent) => {
     // Allow drop
@@ -187,7 +232,9 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
       <Card className="h-full">
         <CardHeader>
           <CardTitle className="font-thin uppercase">Action planning</CardTitle>
-          <CardDescription className="text-lg font-semibold text-black">How about developing an action plan for improvement?</CardDescription>
+          <CardDescription className="text-lg font-semibold text-black">
+            <h2 id="actionPlanHeading">How about developing an action plan for improvement?</h2>
+          </CardDescription>
           <CardAction className="justify-self-center self-center">
             <SquareKanbanIcon />
           </CardAction>
@@ -201,7 +248,7 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
           <ul className="text-base text-muted-foreground mt-2 space-y-2">
             {items.map((item, index) => (
               <li key={index}>
-                <b>{item.title}{": "}</b>
+                <b>{item.title}</b>{": "}
                 {item.value}
               </li>)
             )}
@@ -211,15 +258,19 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
 
           <div className="flex justify-end my-4 gap-4">
             <Button
+              id="add-action-item-btn"
+              title="Add an Action Plan Item"
               variant="outline"
               size="sm"
               className="flex items-center gap-2 cursor-pointer"
-              onClick={() => setData((prev) => [...prev, {item: "", date: ""}])}
+              onClick={onNew}
             >
               <PlusIcon className="h-4 w-4" />
               <span>New Plan Item</span>
             </Button>
             <Button
+              id="save-action-plan-btn"
+              title="Save the Action Plan"
               variant="outline"
               size="sm"
               className="flex items-center gap-2 cursor-pointer"
@@ -229,25 +280,32 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
               <span>Save</span>
             </Button>
           </div>
+          {alert && (
+            <div className="text-red-600 font-semibold mb-4">
+              <p id="save-message" attr-class="d-none" role="status" aria-live="polite">{alert}</p>
+            </div>
+          )}
 
           <ScrollArea
-            className="h-60 rounded-md border flex mt-4"
+            className="h-80 rounded-md border flex mt-4"
             onDrop={(e) => handleDrop(e)}
             onDragOver={handleDragOver}
           >
-            <div className="flex w-full flex-col gap-4 my-2 px-2" ref={scrollRef}>
+            <ul className="flex w-full flex-col gap-4 my-2 px-2" ref={scrollRef} id="action-plan-list">
               {data.length === 0 ? (
                 <div
-                  className="flex items-center rounded justify-center border h-56 bg-slate-100 font-bold text-2xl select-none text-slate-300 uppercase"
+                  className="flex items-center rounded justify-center border h-76 bg-slate-100 font-bold text-2xl select-none text-slate-300 uppercase"
                 >
                   <p className="mx-16">Drag & Drop a Suggestion or Add Your Own</p>
                 </div>
               ) : (
                 data.map((item, index) => (
                   <Planner
+                    id={`actionPlanItem${index}`}
                     key={index}
                     index={index}
                     content={item.item}
+                    onEdit={(index, content) => onUpdate(index, content)}
                     onDelete={(index) => onDelete(index)}
                     onDateSelect={(date: string) => {item.date = date; if (invalidIndex === index) {setInvalidIndex(null)}}}
                     isLast={index === data.length - 1}
@@ -256,7 +314,7 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
                   />
                 ))
               )}
-            </div>
+            </ul>
           </ScrollArea>
         </CardContent>
       </Card>

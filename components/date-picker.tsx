@@ -38,6 +38,7 @@ export function DatePicker({ onDateChanged, className, id, invalid } : DatePicke
     <Popover>
       <PopoverTrigger asChild>
         <Button
+          id={id}      // (A) set id if provided
           variant="outline"
           data-empty={!date}
           className={[
@@ -51,7 +52,12 @@ export function DatePicker({ onDateChanged, className, id, invalid } : DatePicke
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0">
-        <Calendar mode="single" selected={date} onSelect={setDate} />
+        <Calendar
+          mode="single"
+          selected={date}
+          onSelect={setDate}
+          disabled={(day) => day < new Date(new Date().setHours(0, 0, 0, 0))}
+        />
       </PopoverContent>
     </Popover>
   )
