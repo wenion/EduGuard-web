@@ -17,7 +17,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Button } from "../ui/button";
 
 export function HeaderDropdownMenu() {
-  const { logout, user, switchShowPeerRequest } = useAuth();
+  const { logout, user, switchShowPeerRequest, setUnitId } = useAuth();
 
   const [open, setOpen] = useState(false);
   const [compare, setCompare] = useState(false);
@@ -30,6 +30,11 @@ export function HeaderDropdownMenu() {
   const setShowPeer = async (value: boolean) => {
     switchShowPeerRequest(value);
     setCompare(value);
+  };
+
+  const onLogout = async () => {
+    setUnitId(null);
+    await logout();
   };
 
   return (
@@ -95,7 +100,7 @@ export function HeaderDropdownMenu() {
               variant="ghost"
               id="sidePanelLogoutButton"
               className="p-0 text-sm font-normal h-fit w-full justify-start cursor-pointer"
-              onClick={logout}
+              onClick={onLogout}
               disabled={!user?.name}
               attr-class="dropdown-item usr-options"
             >
