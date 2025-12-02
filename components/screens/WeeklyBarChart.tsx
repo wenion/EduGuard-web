@@ -146,5 +146,5 @@ export function WeeklyBar({
   }), [telemetry]);
 
   // Let the parent control height: wrap this <WeeklyBar> in a container with fixed height.
-  return <Bar data={data} options={options} />;
+  return <Bar data={data} options={options} id="weeklyEngagement" />;
 }

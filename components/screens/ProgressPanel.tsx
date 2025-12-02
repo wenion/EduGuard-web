@@ -33,12 +33,13 @@ import { ActionPlanItem, ActionPlanResponse } from "@/types/ActionPlan";
 type FilterType = "all" | "completed" | "none";
 
 type ProgressCardProps = {
+  index: number;
   action: ActionPlanItem;
   onCompleted: (id: number, action:string, marked_status_time: number) => void
   onDeteled: (id: number, action:string, marked_status_time: number) => void
 };
 
-function ProgressCard({ action, onCompleted, onDeteled }: ProgressCardProps) {
+function ProgressCard({ index, action, onCompleted, onDeteled }: ProgressCardProps) {
   const { authorizedFetch } = useAuth();
   const [completedText, setCompletedText] = useState("Completed timely!");
   const [completedLateText, setCompletedLateText] = useState("Completed late.");
@@ -126,13 +127,14 @@ function ProgressCard({ action, onCompleted, onDeteled }: ProgressCardProps) {
   }, []);
 
   return (
-    <Item
+    <li
       key={action.id}
-      variant="outline"
       className={[
+        "rounded-md p-4",
         action.status === "Completed timely!" ? "bg-green-50" :
           action.status === "Completed late." ? "bg-orange-100" : "bg-blue-50"
       ].join(" ")}
+      id={`id="plannedItem${index}`}
     >
       <ItemContent>
         {!action.status ? (
@@ -150,6 +152,10 @@ function ProgressCard({ action, onCompleted, onDeteled }: ProgressCardProps) {
                     variant="outline"
                     size="icon"
                     className="cursor-pointer rounded-full"
+                    attr-class="btn activity-btn hover-border-btn delete-planned-item p-0"
+                    data-list-item={`plannedItem${index}`}
+                    data-bs-title="Double click to delete."
+                    data-db-id={`${action.id}`}
                     onDoubleClick={() => deleteClick(action.id)}
                   >
                     <TrashIcon />
@@ -165,6 +171,9 @@ function ProgressCard({ action, onCompleted, onDeteled }: ProgressCardProps) {
                 variant="outline"
                 size="sm"
                 className="flex items-center gap-2 border border-green-50 cursor-pointer hover:bg-green-50 text-green-400"
+                attr-class="btn insight-control success ct-btn"
+                data-list-item={`plannedItem${index}`}
+                data-db-id={`${action.id}`}
                 disabled={intervalRef2.current !== null}
                 onClick={()=> {completedClick(action.id)}}
               >
@@ -175,6 +184,9 @@ function ProgressCard({ action, onCompleted, onDeteled }: ProgressCardProps) {
                 variant="outline"
                 size="sm"
                 className="flex items-center gap-2 cursor-pointer border border-orange-100 hover:bg-orange-100 text-orange-400"
+                attr-class="btn insight-control warning cl-btn"
+                data-list-item={`plannedItem${index}`}
+                data-db-id={`${action.id}`}
                 disabled={intervalRef.current !== null}
                 onClick={() => completedLateClick(action.id)}
               >
@@ -195,7 +207,7 @@ function ProgressCard({ action, onCompleted, onDeteled }: ProgressCardProps) {
           </>
         )}
       </ItemContent>
-    </Item>
+    </li>
   )
 }
 
@@ -209,7 +221,6 @@ export function ProgressPanel({ plannerData, className }: ProgressPanelProps) {
   const [filter, setFilter] = useState<FilterType>("all");
 
   useEffect(() => {
-    console.log("plannerData changed:", plannerData);
     setData(plannerData);
   }, [plannerData]);
 
@@ -250,7 +261,9 @@ export function ProgressPanel({ plannerData, className }: ProgressPanelProps) {
       <Card className="h-full">
         <CardHeader>
           <CardTitle className="font-thin uppercase">Progress pulse</CardTitle>
-          <CardDescription className="text-lg font-semibold text-black">How are you progressing with your plan?</CardDescription>
+          <CardDescription className="text-lg font-semibold text-black">
+            <h2 id="progressHeading">How are you progressing with your plan?</h2>
+          </CardDescription>
           <CardAction className="justify-self-center self-center">
             <ChartLineIcon />
           </CardAction>
@@ -258,15 +271,16 @@ export function ProgressPanel({ plannerData, className }: ProgressPanelProps) {
         <CardContent>
           <Badge variant="secondary" className="py-2">Mark Your Goal Status</Badge>
           <CardDescription className="text-lg font-normal text-black font-sans italic pt-2">
-            Track your progress as you carry out the action plan.
+            <p attr-class="main-text">Track your progress as you carry out the action plan.</p>
           </CardDescription>
 
-          <p className="text-base text-muted-foreground mt-2 italic">
+          <p className="text-base text-muted-foreground mt-2 italic" attr-class="comments">
             Use the filters below to focus on what matters most.
           </p>
 
           <div className="flex justify-end my-4 gap-2 lg:flex-wrap">
             <Button
+              id="in-progress-view"
               variant="outline"
               size="sm"
               className="flex items-center gap-2 cursor-pointer"
@@ -276,6 +290,7 @@ export function ProgressPanel({ plannerData, className }: ProgressPanelProps) {
               <span>In-progress items only</span>
             </Button>
             <Button
+              id="completed-view"
               variant="outline"
               size="sm"
               className="flex items-center gap-2 cursor-pointer"
@@ -285,6 +300,7 @@ export function ProgressPanel({ plannerData, className }: ProgressPanelProps) {
               <span>Completed items only</span>
             </Button>
             <Button
+              id="all-item-view"
               variant="outline"
               size="sm"
               className="flex items-center gap-2 cursor-pointer"
@@ -296,16 +312,17 @@ export function ProgressPanel({ plannerData, className }: ProgressPanelProps) {
           </div>
 
           <ScrollArea className="h-[44rem] rounded-md border flex mt-4">
-            <div className="flex w-full flex-col gap-4 mt-2 px-2">
-              {filteredData.map(action => (
+            <ul className="flex w-full flex-col gap-4 mt-2 px-2" attr-class="list-group monitor-list" id="monitor-progress-list">
+              {filteredData.map((action, index) => (
                 <ProgressCard
                   key={action.id}
+                  index={index}
                   action={action}
                   onCompleted={updateData}
                   onDeteled={onDetele}
                 />
               ))}
-            </div>
+            </ul>
           </ScrollArea>
         </CardContent>
       </Card>

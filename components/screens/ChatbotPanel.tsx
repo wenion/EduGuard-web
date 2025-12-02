@@ -114,7 +114,7 @@ export function ChatbotPanel() {
   return (
     <div className="fixed bottom-10 right-5 flex">
       {open && (
-        <Card className="w-[30rem] h-[36rem] bg-teal-800">
+        <Card className="w-[30rem] h-[36rem] bg-teal-800" id="chatWindow" role="dialog" aria-modal="false" aria-label="Edvance chat assistant">
           <CardHeader>
             <CardTitle className="text-white">Edvance Chat</CardTitle>
             <CardDescription className="flex items-center text-white">
@@ -122,16 +122,32 @@ export function ChatbotPanel() {
               Typically replies in under a minute
             </CardDescription>
             <CardAction className="space-x-2">
-              <Button className="cursor-pointer text-white" variant="ghost" onClick={refresh}><RefreshCwIcon /></Button>
-              <Button className="cursor-pointer text-white" variant="ghost" onClick={close}><XIcon /></Button>
+              <Button
+                id="newChat"
+                aria-label="Start a new chat"
+                className="cursor-pointer text-white"
+                variant="ghost"
+                onClick={refresh}
+              >
+                <RefreshCwIcon />
+              </Button>
+              <Button
+                id="closeChat"
+                aria-label="Close chat"
+                className="cursor-pointer text-white"
+                variant="ghost"
+                onClick={close}
+              >
+                <XIcon />
+              </Button>
             </CardAction>
           </CardHeader>
           <CardContent className="bg-slate-50 h-3/5 px-2">
             {chatlist.length === 0 ? (
-              <div className="flex flex-col items-center justify-center border-2 border-slate-100 rounded-xl bg-white my-4 border-dashed">
+              <div className="flex flex-col items-center justify-center border-2 border-slate-100 rounded-xl bg-white my-4 border-dashed" id="chatEmptyState">
                 <MessageCircleMoreIcon className="w-10 h-10 mt-2"/>
-                <p className="font-bold">Start a conversation</p>
-                <p className="text-center mx-2 mb-2">Ask for learning tips, feedback summaries, or help planning next steps.</p>
+                <p className="font-bold" attr-class="empty-title">Start a conversation</p>
+                <p className="text-center mx-2 mb-2" attr-class="empty-copy">Ask for learning tips, feedback summaries, or help planning next steps.</p>
               </div>
             ) : (
               <div
@@ -156,6 +172,7 @@ export function ChatbotPanel() {
             )}
           </CardContent>
           <CardFooter className="flex space-x-4 border-slate-200 min-h-1/5">
+            <label htmlFor="chatTextarea" className="sr-only">Message Edvance</label>
             <Textarea
               id="chatTextarea"
               placeholder="Ask anything about your course"
@@ -164,6 +181,8 @@ export function ChatbotPanel() {
               onKeyDown={onEnter}
             />
             <Button
+              id="sendButton"
+              aria-label="Send chat message"
               variant="outline"
               size="icon"
               className="flex cursor-pointer rounded-full items-center justify-center"

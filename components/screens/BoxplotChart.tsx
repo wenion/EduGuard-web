@@ -134,5 +134,6 @@ export function AssessmentBoxplot({
     },
   }), [telemetry]);
 
-  return <div className="h-72"><Chart type="boxplot" data={data as any} options={options as any} /></div>;
+  return <div className="h-72"><Chart type="boxplot" data={data as any} options={options as any} id="assessmentCanvas"/></div>;
 }
+

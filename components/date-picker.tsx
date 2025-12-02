@@ -38,6 +38,7 @@ export function DatePicker({ onDateChanged, className, id, invalid } : DatePicke
     <Popover>
       <PopoverTrigger asChild>
         <Button
+          id={id}      // (A) set id if provided
           variant="outline"
           data-empty={!date}
           className={[

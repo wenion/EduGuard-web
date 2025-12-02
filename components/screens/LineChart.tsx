@@ -157,5 +157,5 @@ export function OverallLine({
     },
   };
 
-  return <Line data={data} options={options} />;
+  return <Line data={data} options={options} id="overallEngagement" />;
 }

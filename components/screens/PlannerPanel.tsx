@@ -26,17 +26,18 @@ import { useAuth } from "@/context/AuthContext";
 import { createActionPlanRequest } from "@/lib/authApi";
 
 type PlannerProps = {
+  id: string;
   index: number;
   content: string;
   onEdit: (index: number, content: string) => void;
   onDelete: (index: number) => void;
   onDateSelect: (date: string) => void;
   isLast?: boolean;
-  lastRef?: React.Ref<HTMLDivElement>;
+  lastRef?: React.Ref<HTMLLIElement>;
   invalid?: boolean;
 };
 
-function Planner({ index, content, onEdit, onDelete, onDateSelect, isLast, lastRef, invalid }: PlannerProps) {
+function Planner({ id, index, content, onEdit, onDelete, onDateSelect, isLast, lastRef, invalid }: PlannerProps) {
   const [edit, setEdit] = useState(content.trim() === "" ? true : false);
 
   const onSave = () => {
@@ -48,11 +49,10 @@ function Planner({ index, content, onEdit, onDelete, onDateSelect, isLast, lastR
   };
 
   return (
-    <Item
-      variant="outline"
-      className="flex items-center justify-between border h-fit"
+    <li
+      className="flex items-center justify-between border rounded p-4 h-fit"
       ref={isLast ? lastRef : undefined}
-      id = {`planner-item-${index}`}
+      id={id}
     >
       <div className="flex w-full gap-2">
         {edit ? (
@@ -80,7 +80,7 @@ function Planner({ index, content, onEdit, onDelete, onDateSelect, isLast, lastR
           </div>
         ) : (
           <div className="flex flex-col">
-            <DatePicker onDateChanged={onDateSelect} className="" invalid={invalid}/>
+            <DatePicker onDateChanged={onDateSelect} className="" invalid={invalid} id={`date-actionPlanItem${index}`}/>
             <div className="flex justify-center gap-4 my-4">
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -116,7 +116,7 @@ function Planner({ index, content, onEdit, onDelete, onDateSelect, isLast, lastR
           </div>
         )}
       </div>
-    </Item>
+    </li>
   )
 }
 
@@ -139,14 +139,21 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
     {title:"T", value: "Assign a Time-bound deadline to each task to stay accountable (e.g., “Complete by Friday at 6 PM”)."}
   ]
 
-  const scrollRef = useRef<HTMLDivElement>(null); // container reference
-  const lastItemRef = useRef<HTMLDivElement>(null); // last added item reference
+  const scrollRef = useRef<HTMLUListElement>(null); // container reference
+  const lastItemRef = useRef<HTMLLIElement>(null); // last added item reference
 
   const onDelete = (index: number) => {
     setData((prev) => prev.filter((_, i) => i !== index));
   }
 
   const onSave = () => {
+    if (data.length === 0) {
+      setAlert("No action plan item to save!");
+      setTimeout(() => {
+        setAlert(null);
+      }, 3000);
+      return;
+    }
     for (let i = 0; i < data.length; i++) {
       const item = data[i];
       if (item.item === "") {
@@ -225,7 +232,9 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
       <Card className="h-full">
         <CardHeader>
           <CardTitle className="font-thin uppercase">Action planning</CardTitle>
-          <CardDescription className="text-lg font-semibold text-black">How about developing an action plan for improvement?</CardDescription>
+          <CardDescription className="text-lg font-semibold text-black">
+            <h2 id="actionPlanHeading">How about developing an action plan for improvement?</h2>
+          </CardDescription>
           <CardAction className="justify-self-center self-center">
             <SquareKanbanIcon />
           </CardAction>
@@ -239,7 +248,7 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
           <ul className="text-base text-muted-foreground mt-2 space-y-2">
             {items.map((item, index) => (
               <li key={index}>
-                <b>{item.title}{": "}</b>
+                <b>{item.title}</b>{": "}
                 {item.value}
               </li>)
             )}
@@ -249,6 +258,8 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
 
           <div className="flex justify-end my-4 gap-4">
             <Button
+              id="add-action-item-btn"
+              title="Add an Action Plan Item"
               variant="outline"
               size="sm"
               className="flex items-center gap-2 cursor-pointer"
@@ -258,6 +269,8 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
               <span>New Plan Item</span>
             </Button>
             <Button
+              id="save-action-plan-btn"
+              title="Save the Action Plan"
               variant="outline"
               size="sm"
               className="flex items-center gap-2 cursor-pointer"
@@ -269,7 +282,7 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
           </div>
           {alert && (
             <div className="text-red-600 font-semibold mb-4">
-              {alert}
+              <p id="save-message" attr-class="d-none" role="status" aria-live="polite">{alert}</p>
             </div>
           )}
 
@@ -278,7 +291,7 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
             onDrop={(e) => handleDrop(e)}
             onDragOver={handleDragOver}
           >
-            <div className="flex w-full flex-col gap-4 my-2 px-2" ref={scrollRef}>
+            <ul className="flex w-full flex-col gap-4 my-2 px-2" ref={scrollRef} id="action-plan-list">
               {data.length === 0 ? (
                 <div
                   className="flex items-center rounded justify-center border h-76 bg-slate-100 font-bold text-2xl select-none text-slate-300 uppercase"
@@ -288,6 +301,7 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
               ) : (
                 data.map((item, index) => (
                   <Planner
+                    id={`actionPlanItem${index}`}
                     key={index}
                     index={index}
                     content={item.item}
@@ -300,7 +314,7 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
                   />
                 ))
               )}
-            </div>
+            </ul>
           </ScrollArea>
         </CardContent>
       </Card>
