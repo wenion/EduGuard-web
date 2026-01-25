@@ -10,15 +10,21 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
 
 import { useAuth } from "@/context/AuthContext";
+import { login as monashLogin } from "@/app/auth/login";
 
 export default function LoginForm() {
-  const { login, loading, error } = useAuth();
+  const { login, loading } = useAuth();
   const [username, setU] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const [password, setP] = useState("");
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await login(username, password);
+    if (!username) {
+      setError("Please enter your email address.");
+      return;
+    }
+    await monashLogin(username);
   };
 
   return (
@@ -33,45 +39,31 @@ export default function LoginForm() {
             <Label htmlFor="loginUsername">Email</Label>
             <Input
               id="loginUsername"
-              placeholder="name@example.com"
+              placeholder="name@monash.edu"
               value={username}
-              onChange={(e) => setU(e.target.value)}
+              onChange={(e) => {setU(e.target.value); setError(null);}}
               disabled={loading}
               autoComplete="username"
+              aria-invalid ={error ? "true" : "false"}
             />
             <span className="text-sm pb-4 text-slate-500" id="loginHelper">Use your institutional email address.</span>
-          </div>
 
-          <div className="grid gap-1.5">
-            <Label htmlFor="loginPassword">Password</Label>
-            <Input
-              id="loginPassword"
-              placeholder="Your Password here"
-              type="password"
-              value={password}
-              onChange={(e) => setP(e.target.value)}
-              disabled={loading}
-              autoComplete="current-password"
-            />
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
           </div>
-
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
         </CardContent>
 
         <CardFooter>
-          <Button type="submit" className="w-full" disabled={loading} id="loginButton">
-            {loading ? (
-              <span className="inline-flex items-center gap-2">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Logging in…
-              </span>
-            ) : (
-              "Login"
-            )}
+          <Button
+            type="submit"
+            className="w-full cursor-pointer"
+            disabled={loading}
+            id="loginButton"
+          >
+            Continue
           </Button>
         </CardFooter>
       </form>
