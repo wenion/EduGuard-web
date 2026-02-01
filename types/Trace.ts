@@ -11,6 +11,6 @@ export type Trace = {
   pageHeight?: number | null;
   scrollX?: number | null;
   scrollY?: number | null;
-  eventX: number;
-  eventY: number;
+  eventX: number | null;
+  eventY: number | null;
 };

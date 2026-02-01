@@ -28,6 +28,7 @@ import {
 
 import { useAuth } from "@/context/AuthContext";
 import { fetchActionPlanRequest, finaliseAction } from "@/lib/authApi";
+import { useScrollAreaTracking } from "@/context/useScrollAreaTracking";
 import { ActionPlanItem, ActionPlanResponse } from "@/types/ActionPlan";
 
 type FilterType = "all" | "completed" | "none";
@@ -217,6 +218,7 @@ type ProgressPanelProps = {
 };
 
 export function ProgressPanel({ plannerData, className }: ProgressPanelProps) {
+  const scrollAreaRef = useRef<HTMLDivElement | null>(null);
   const [data, setData] = useState<ActionPlanResponse>({ action_plan: [] });
   const [filter, setFilter] = useState<FilterType>("all");
 
@@ -255,6 +257,8 @@ export function ProgressPanel({ plannerData, className }: ProgressPanelProps) {
       return { ...prev, action_plan: filtered };
     });
   }
+
+  useScrollAreaTracking(scrollAreaRef);
 
   return (
     <div className={className}>
@@ -311,7 +315,7 @@ export function ProgressPanel({ plannerData, className }: ProgressPanelProps) {
             </Button>
           </div>
 
-          <ScrollArea className="h-[44rem] rounded-md border flex mt-4">
+          <ScrollArea ref={scrollAreaRef} className="h-[44rem] rounded-md border flex mt-4">
             <ul className="flex w-full flex-col gap-4 mt-2 px-2" attr-class="list-group monitor-list" id="monitor-progress-list">
               {filteredData.map((action, index) => (
                 <ProgressCard

@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import { useAuth } from "@/context/AuthContext";
-import { useEventTracking } from "@/context/Logger";
+import { useGlobalEventTracking } from "@/context/useGlobalEventTracking";
 
 import Header from "@/components/screens/Header";
 import LoginView from "@/components/screens/LoginView";
@@ -16,7 +16,7 @@ type Screen = "home" | "dashboard" | "settings";
 export default function App() {
   const [screen, setScreen] = useState<Screen>("dashboard");
   const { isAuthenticated, user, logout } = useAuth();
-  useEventTracking();
+  useGlobalEventTracking();
 
   return (
     <div className="space-y-6">

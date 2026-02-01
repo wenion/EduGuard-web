@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChevronLeft, ChevronRight, GripVertical, Lightbulb } from "lucide-react";
 
 import { Feedback, FeedbackSet } from "@/types/Feedback"; // Import type for feedback
+import { useScrollAreaTracking } from "@/context/useScrollAreaTracking";
 
 type FeedbackCardProps = {
   feedback: Feedback,
@@ -21,6 +22,8 @@ function FeedbackCard({
   onNext,
   className,
 }: FeedbackCardProps) {
+  const scrollAreaRef = useRef<HTMLDivElement | null>(null);
+  const scrollAreaRef2 = useRef<HTMLDivElement | null>(null);
   const currentWeek = useMemo(() => feedback.cur_week, [feedback]);
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
 
@@ -34,6 +37,10 @@ function FeedbackCard({
     e.dataTransfer.setData("text/plain", data[index]);
     e.dataTransfer.effectAllowed = "move";
   };
+
+  useScrollAreaTracking(scrollAreaRef);
+  useScrollAreaTracking(scrollAreaRef2);
+
   return (
     <div className={className}>
       <Card className="h-full">
@@ -60,8 +67,8 @@ function FeedbackCard({
             }
           </p>
 
-          <ScrollArea className="h-60 rounded-md border flex mt-4">
-            <ul id="todo-list" className="flex w-full flex-col gap-4 my-2 px-2">
+          <ScrollArea ref={scrollAreaRef} className="h-60 rounded-md border flex mt-4" attr-class="ul-container">
+            <ul id="todo-list" className="flex w-full flex-col gap-4 my-2 px-2" attr-class="list-group">
               {feedback.actionable_advice.map((advice, index) => {
                 return (
                   <li
@@ -87,8 +94,8 @@ function FeedbackCard({
             }
           </p>
 
-          <ScrollArea className="h-60 rounded-md border flex mt-4">
-            <ul id="future-todo-list" className="flex w-full flex-col gap-4 my-2 px-2">
+          <ScrollArea ref={scrollAreaRef2} className="h-60 rounded-md border flex mt-4" attr-class="ul-container mb-2">
+            <ul id="future-todo-list" className="flex w-full flex-col gap-4 my-2 px-2" attr-class="list-group">
               {feedback.feedforward_actions.map((action, index) => (
                 <li
                   id={`actionItem${index + feedback.actionable_advice.length}`}
