@@ -3,6 +3,7 @@
 
 import { useEffect } from "react";
 import { OIDC } from "@/app/auth/oidcConfig";
+import { useAuth } from "@/context/AuthContext";
 
 async function exchangeCode(code: string) {
   const verifier = sessionStorage.getItem("pkce_verifier");
@@ -32,7 +33,11 @@ async function exchangeCode(code: string) {
 }
 
 export default function CallbackPage() {
+  const { isAuthenticated, loading, login } = useAuth();
+
   useEffect(() => {
+    if (loading) return;
+
     (async () => {
       try {
         const url = new URL(window.location.href);
@@ -50,31 +55,36 @@ export default function CallbackPage() {
 
         const tokens = await exchangeCode(code);
 
-        const expiresAt =
-          Date.now() + tokens.expires_in * 1000;
+        sessionStorage.removeItem("oidc_state");
+        sessionStorage.removeItem("pkce_verifier");
 
-        sessionStorage.setItem(
-          "access_token",
-          tokens.access_token
-        );
         sessionStorage.setItem(
           "id_token",
           tokens.id_token
         );
-        sessionStorage.setItem(
-          "access_token_expires_at",
-          String(expiresAt)
-        );
 
-        sessionStorage.removeItem("oidc_state");
-        sessionStorage.removeItem("pkce_verifier");
+        const idToken = sessionStorage.getItem("id_token");
+        if (!idToken) throw new Error("Missing id_token");
+
+        if (!isAuthenticated) {
+          try {
+            await login({
+              type: "oidc",
+              idToken: idToken,
+            });
+          } catch (e) {
+            window.location.replace("/login");
+          } finally {
+            sessionStorage.removeItem("id_token");
+          }
+        }
 
         window.location.replace("/");
       } catch (e) {
         console.error(e);
       }
     })();
-  }, []);
+  }, [loading, isAuthenticated, login]);
 
   return <p>Signing you in…</p>;
 }

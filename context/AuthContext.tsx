@@ -3,6 +3,10 @@ import React, { createContext, useContext, useEffect, useMemo, useRef, useState 
 import type { LoginResponse } from "@/types/Auth";
 import { loginRequest, logoutRequest, setShowPeerRequest } from "@/lib/authApi";
 
+type LoginInput =
+  | { type: "password"; username: string; password: string }
+  | { type: "oidc"; idToken: string };
+
 type AuthState = {
   token: string | null;
   user: LoginResponse["user"] | null;
@@ -15,7 +19,7 @@ type AuthState = {
   setUnitId: (unitId: number | null) => void;
   sessionID: string | null;
   setSessionID: (sessionID: string | null) => void;
-  login: (username: string, password: string) => Promise<void>;
+  login: (input: LoginInput) => Promise<void>;
   logout: () => void;
   authorizedFetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
   switchShowPeerRequest: (value: boolean) => Promise<void>;
@@ -55,7 +59,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<LoginResponse["user"] | null>(null);
   const [genaiAccess, setGenaiAccess] = useState(false);
   const [expiresAt, setExpiresAt] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [hydrated, setHydrated] = useState(false);
+  const [authLoading, setAuthLoading] = useState(false);
   const [error, setErr] = useState<string | null>(null);
   const expiryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -96,7 +101,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         writeStored(null);
       }
     }
-    setLoading(false);
+    setHydrated(true);
     // cleanup on unmount
     return clearExpiryTimer;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -111,11 +116,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     writeStored(null);
   };
 
-  const login = async (username: string, password: string) => {
+  const login = async (
+    input:
+      | { type: "password"; username: string; password: string }
+      | { type: "oidc"; idToken: string }
+  ) => {
     setErr(null);
-    setLoading(true);
+    setAuthLoading(true);
     try {
-      const data = await loginRequest(username, password);
+      const data = await loginRequest(
+        input.type === "password"
+          ? { username: input.username, password: input.password }
+          : { idToken: input.idToken }
+      );
       const exp = Math.floor(data.expires_at); // backend provides epoch ms (can be fractional)
       setToken(data.token);
       setUser(data.user);
@@ -132,7 +145,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setErr(e?.message || "Login failed");
       throw e;
     } finally {
-      setLoading(false);
+      setAuthLoading(false);
     }
   };
 
@@ -205,7 +218,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     genaiAccess,
     expiresAt,
     isAuthenticated: !!token && !!expiresAt && Date.now() < expiresAt,
-    loading,
+    loading: authLoading || !hydrated,
     error: error,
     selectedUnitId,
     setUnitId,
@@ -215,7 +228,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     logout,
     authorizedFetch,
     switchShowPeerRequest,
-  }), [token, user, genaiAccess, expiresAt, loading, error, selectedUnitId, sessionID]);
+  }), [token, user, genaiAccess, expiresAt, authLoading, hydrated, error, selectedUnitId, sessionID]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

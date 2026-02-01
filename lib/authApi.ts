@@ -3,7 +3,11 @@ import type { Trace } from "@/types/Trace";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE!;
 
-export async function loginRequest(username: string, password: string): Promise<LoginResponse> {
+export async function loginRequest(
+  payload:
+    | { username: string; password: string }
+    | { idToken: string }
+): Promise<LoginResponse> {
   const res = await fetch(`${API_BASE}/auth/login`, {
     method: "POST",
     headers: {
@@ -11,7 +15,7 @@ export async function loginRequest(username: string, password: string): Promise<
         "Accept": "application/json"
     },
     // adjust body field names if your backend expects different keys
-    body: JSON.stringify({ username, password }),
+    body: JSON.stringify(payload),
   });
   if (!res.ok) {
     // try to read error text/json
