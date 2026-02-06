@@ -40,10 +40,11 @@ export default function CallbackPage() {
   const { loading, login } = useAuth();
   const hasRun = useRef(false);
   useEffect(() => {
-    console.log("effect running");
+    
     if (loading || hasRun.current) return;
     hasRun.current = true;
     let isCancelled = false;
+    console.log("effect running");
 
     (async () => {
       try {
