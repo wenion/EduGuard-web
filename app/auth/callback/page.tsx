@@ -72,8 +72,8 @@ export default function CallbackPage() {
               type: "oidc",
               idToken: idToken,
             });
-          } catch (e) {
-            window.location.replace("/login");
+          } catch {
+            window.location.replace("/");
           } finally {
             sessionStorage.removeItem("id_token");
           }
@@ -82,6 +82,7 @@ export default function CallbackPage() {
         window.location.replace("/");
       } catch (e) {
         console.error(e);
+        window.location.replace("/");
       }
     })();
   }, [loading, isAuthenticated, login]);

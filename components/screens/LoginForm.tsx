@@ -7,24 +7,54 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2 } from "lucide-react";
 
 import { useAuth } from "@/context/AuthContext";
 import { login as monashLogin } from "@/app/auth/login";
 
+type LoginMode = "sso" | "password";
+
 export default function LoginForm() {
   const { login, loading } = useAuth();
-  const [username, setU] = useState("");
+  const [mode, setMode] = useState<LoginMode>("sso");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [password, setP] = useState("");
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!username) {
-      setError("Please enter your email address.");
+
+    setError(null);
+
+    if (mode === "sso") {
+      const trimmedUsername = username.trim();
+      if (!trimmedUsername) {
+        setError("Please enter your username.");
+        return;
+      }
+      try {
+        await monashLogin(trimmedUsername);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Unable to start SSO login.");
+      }
       return;
     }
-    await monashLogin(username);
+
+    if (!username || !password) {
+      setError("Please enter both username and password.");
+      return;
+    }
+
+    try {
+      await login({ type: "password", username, password });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Login failed.");
+    }
+  };
+
+  const switchMode = (nextMode: LoginMode) => {
+    setMode(nextMode);
+    setError(null);
+    setPassword("");
   };
 
   return (
@@ -35,36 +65,113 @@ export default function LoginForm() {
 
       <form onSubmit={onSubmit} className="space-y-3" id="loginForm">
         <CardContent className="space-y-3">
-          <div className="grid gap-1.5">
-            <Label htmlFor="loginUsername">Email</Label>
-            <Input
-              id="loginUsername"
-              placeholder="name@monash.edu"
-              value={username}
-              onChange={(e) => {setU(e.target.value); setError(null);}}
-              disabled={loading}
-              autoComplete="username"
-              aria-invalid ={error ? "true" : "false"}
-            />
-            <span className="text-sm pb-4 text-slate-500" id="loginHelper">Use your institutional email address.</span>
+          {mode === "password" ? (
+            <div className="grid gap-3">
+              <div className="grid gap-1.5">
+                <Label htmlFor="loginUsername">Username</Label>
+                <Input
+                  id="loginUsername"
+                  type="text"
+                  placeholder="Your username"
+                  value={username}
+                  onChange={(e) => {
+                    setUsername(e.target.value);
+                    setError(null);
+                  }}
+                  disabled={loading}
+                  autoComplete="username"
+                  aria-invalid={error ? "true" : "false"}
+                />
+              </div>
+              <div className="grid gap-1.5">
+                <Label htmlFor="loginPassword">Password</Label>
+                <Input
+                  id="loginPassword"
+                  type="password"
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setError(null);
+                  }}
+                  disabled={loading}
+                  autoComplete="current-password"
+                  aria-invalid={error ? "true" : "false"}
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="grid gap-1.5">
+              <Label htmlFor="loginSsoUsername">Username</Label>
+              <Input
+                id="loginSsoUsername"
+                type="text"
+                placeholder="Your username"
+                value={username}
+                onChange={(e) => {
+                  setUsername(e.target.value);
+                  setError(null);
+                }}
+                disabled={loading}
+                autoComplete="username"
+                aria-invalid={error ? "true" : "false"}
+              />
+              <p className="text-sm text-slate-500" id="loginHelper">
+                Use your institutional username for SSO.
+              </p>
+            </div>
+          )}
 
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-          </div>
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
         </CardContent>
 
-        <CardFooter>
-          <Button
-            type="submit"
-            className="w-full cursor-pointer"
-            disabled={loading}
-            id="loginButton"
-          >
-            Continue
-          </Button>
+        <CardFooter className="flex flex-col gap-2">
+          {mode === "sso" ? (
+            <>
+              <Button
+                type="submit"
+                className="w-full cursor-pointer"
+                disabled={loading}
+                id="ssoLoginButton"
+              >
+                Continue with SSO
+              </Button>
+              <Button
+                type="button"
+                variant="link"
+                className="w-full cursor-pointer"
+                onClick={() => switchMode("password")}
+                disabled={loading}
+                id="showPasswordLoginButton"
+              >
+                Use username/password instead
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                type="submit"
+                className="w-full cursor-pointer"
+                disabled={loading}
+                id="passwordLoginButton"
+              >
+                Log In
+              </Button>
+              <Button
+                type="button"
+                variant="link"
+                className="w-full cursor-pointer"
+                onClick={() => switchMode("sso")}
+                disabled={loading}
+                id="backToSsoButton"
+              >
+                Back to SSO login
+              </Button>
+            </>
+          )}
         </CardFooter>
       </form>
     </Card>
