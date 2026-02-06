@@ -44,7 +44,6 @@ export default function CallbackPage() {
     if (loading || hasRun.current) return;
     hasRun.current = true;
     let isCancelled = false;
-    console.log("effect running");
 
     (async () => {
       try {
@@ -86,9 +85,9 @@ export default function CallbackPage() {
         }
       } catch (e) {
         console.error(e);
-        // if (!isCancelled) {
-        //  window.location.replace(SSO_FAILURE_REDIRECT);
-        // }
+        if (!isCancelled) {
+         window.location.replace(SSO_FAILURE_REDIRECT);
+        }
       } finally {
         sessionStorage.removeItem("oidc_state");
         sessionStorage.removeItem("pkce_verifier");
