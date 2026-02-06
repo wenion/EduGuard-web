@@ -1,7 +1,7 @@
 // app/auth/callback/page.tsx
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { OIDC } from "@/app/auth/oidcConfig";
 import { useAuth } from "@/context/AuthContext";
 import { AuthApiError } from "@/lib/authApi";
@@ -38,11 +38,11 @@ async function exchangeCode(code: string) {
 
 export default function CallbackPage() {
   const { loading, login } = useAuth();
-
+  const hasRun = useRef(false);
   useEffect(() => {
     console.log("effect running");
-    if (loading) return;
-
+    if (loading || hasRun.current) return;
+    hasRun.current = true;
     let isCancelled = false;
 
     (async () => {
