@@ -13,16 +13,23 @@ import { login as monashLogin } from "@/app/auth/login";
 
 type LoginMode = "sso" | "password";
 
-export default function LoginForm() {
+type LoginFormProps = {
+  initialError?: string;
+};
+
+export default function LoginForm({ initialError }: LoginFormProps) {
   const { login, loading } = useAuth();
   const [mode, setMode] = useState<LoginMode>("sso");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [dismissInitialError, setDismissInitialError] = useState(false);
+  const displayedError = error ?? (!dismissInitialError ? initialError ?? null : null);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    setDismissInitialError(true);
     setError(null);
 
     if (mode === "sso") {
@@ -53,6 +60,7 @@ export default function LoginForm() {
 
   const switchMode = (nextMode: LoginMode) => {
     setMode(nextMode);
+    setDismissInitialError(true);
     setError(null);
     setPassword("");
   };
@@ -75,6 +83,7 @@ export default function LoginForm() {
                   placeholder="Your username"
                   value={username}
                   onChange={(e) => {
+                    setDismissInitialError(true);
                     setUsername(e.target.value);
                     setError(null);
                   }}
@@ -90,6 +99,7 @@ export default function LoginForm() {
                   type="password"
                   value={password}
                   onChange={(e) => {
+                    setDismissInitialError(true);
                     setPassword(e.target.value);
                     setError(null);
                   }}
@@ -108,6 +118,7 @@ export default function LoginForm() {
                 placeholder="Your username"
                 value={username}
                 onChange={(e) => {
+                  setDismissInitialError(true);
                   setUsername(e.target.value);
                   setError(null);
                 }}
@@ -121,9 +132,9 @@ export default function LoginForm() {
             </div>
           )}
 
-          {error && (
+          {displayedError && (
             <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
+              <AlertDescription>{displayedError}</AlertDescription>
             </Alert>
           )}
         </CardContent>

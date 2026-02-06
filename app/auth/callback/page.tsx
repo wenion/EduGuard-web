@@ -4,6 +4,10 @@
 import { useEffect } from "react";
 import { OIDC } from "@/app/auth/oidcConfig";
 import { useAuth } from "@/context/AuthContext";
+import { AuthApiError } from "@/lib/authApi";
+
+const SSO_FAILURE_REDIRECT = "/?authError=sso_failed";
+const NO_LEARNING_DATA_REDIRECT = "/auth/no-learning-data";
 
 async function exchangeCode(code: string) {
   const verifier = sessionStorage.getItem("pkce_verifier");
@@ -38,53 +42,63 @@ export default function CallbackPage() {
   useEffect(() => {
     if (loading) return;
 
+    let isCancelled = false;
+
     (async () => {
       try {
         const url = new URL(window.location.href);
+        const oidcError = url.searchParams.get("error");
         const code = url.searchParams.get("code");
         const state = url.searchParams.get("state");
 
+        if (oidcError) {
+          throw new Error(`OIDC provider returned error: ${oidcError}`);
+        }
         if (!code) throw new Error("Missing code");
 
-        const expectedState =
-          sessionStorage.getItem("oidc_state");
+        const expectedState = sessionStorage.getItem("oidc_state");
 
-        if (state !== expectedState) {
+        if (!expectedState || state !== expectedState) {
           throw new Error("Invalid state");
         }
 
         const tokens = await exchangeCode(code);
-
-        sessionStorage.removeItem("oidc_state");
-        sessionStorage.removeItem("pkce_verifier");
-
-        sessionStorage.setItem(
-          "id_token",
-          tokens.id_token
-        );
-
-        const idToken = sessionStorage.getItem("id_token");
+        const idToken = tokens?.id_token as string | undefined;
         if (!idToken) throw new Error("Missing id_token");
 
         if (!isAuthenticated) {
           try {
             await login({
               type: "oidc",
-              idToken: idToken,
+              idToken,
             });
-          } catch {
-            window.location.replace("/");
-          } finally {
-            sessionStorage.removeItem("id_token");
+          } catch (error) {
+            if (error instanceof AuthApiError && error.status === 403) {
+              window.location.replace(NO_LEARNING_DATA_REDIRECT);
+              return;
+            }
+            throw error;
           }
         }
 
-        window.location.replace("/");
+        if (!isCancelled) {
+          window.location.replace("/");
+        }
       } catch (e) {
         console.error(e);
-        window.location.replace("/");
+        if (!isCancelled) {
+          window.location.replace(SSO_FAILURE_REDIRECT);
+        }
+      } finally {
+        sessionStorage.removeItem("oidc_state");
+        sessionStorage.removeItem("pkce_verifier");
+        sessionStorage.removeItem("id_token");
       }
     })();
+
+    return () => {
+      isCancelled = true;
+    };
   }, [loading, isAuthenticated, login]);
 
   return <p>Signing you in…</p>;

@@ -20,7 +20,7 @@ type AuthState = {
   sessionID: string | null;
   setSessionID: (sessionID: string | null) => void;
   login: (input: LoginInput) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   authorizedFetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
   switchShowPeerRequest: (value: boolean) => Promise<void>;
 };
@@ -151,13 +151,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      await logoutRequest(token!);
-      // Handle successful logout (e.g., redirect to login page)
-      localStorage.removeItem(STORAGE_KEY);
-      doLogout();
+      if (token) {
+        await logoutRequest(token);
+      }
     } catch (error) {
       console.error("Logout failed:", error);
-      // Handle error (e.g., show notification)
+    } finally {
+      doLogout();
     }
   };
 

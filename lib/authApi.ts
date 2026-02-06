@@ -3,6 +3,16 @@ import type { Trace } from "@/types/Trace";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE!;
 
+export class AuthApiError extends Error {
+  status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = "AuthApiError";
+    this.status = status;
+  }
+}
+
 export async function loginRequest(
   payload:
     | { username: string; password: string }
@@ -24,7 +34,7 @@ export async function loginRequest(
       const j = await res.json();
       msg = j?.message || msg;
     } catch {/* ignore */}
-    throw new Error(msg);
+    throw new AuthApiError(msg, res.status);
   }
   return res.json() as Promise<LoginResponse>;
 }

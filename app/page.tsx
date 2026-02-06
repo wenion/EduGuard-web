@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 import { useAuth } from "@/context/AuthContext";
 import { useEventTracking } from "@/context/Logger";
@@ -15,7 +16,9 @@ type Screen = "home" | "dashboard" | "settings";
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>("dashboard");
-  const { isAuthenticated, user, logout } = useAuth();
+  const searchParams = useSearchParams();
+  const authError = searchParams.get("authError");
+  const { isAuthenticated } = useAuth();
   useEventTracking();
 
   return (
@@ -26,7 +29,7 @@ export default function App() {
       {screen === "home" && <HomeView setScreen={setScreen} />}
       {screen === "dashboard" &&
         <main id="mainContent" attr-class="body-container" className="mx-4">
-          {isAuthenticated ? <DashboardView /> : <LoginView /> }
+          {isAuthenticated ? <DashboardView /> : <LoginView authError={authError} /> }
         </main>
       }
       {screen === "settings" && <SettingsView />}
