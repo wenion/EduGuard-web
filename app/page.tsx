@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { useAuth } from "@/context/AuthContext";
@@ -14,10 +14,15 @@ import SettingsView from "@/components/screens/SettingsView";
 
 type Screen = "home" | "dashboard" | "settings";
 
-export default function App() {
-  const [screen, setScreen] = useState<Screen>("dashboard");
+function DashboardScreen({ isAuthenticated }: { isAuthenticated: boolean }) {
   const searchParams = useSearchParams();
   const authError = searchParams.get("authError");
+
+  return isAuthenticated ? <DashboardView /> : <LoginView authError={authError} />;
+}
+
+export default function App() {
+  const [screen, setScreen] = useState<Screen>("dashboard");
   const { isAuthenticated } = useAuth();
   useEventTracking();
 
@@ -29,7 +34,9 @@ export default function App() {
       {screen === "home" && <HomeView setScreen={setScreen} />}
       {screen === "dashboard" &&
         <main id="mainContent" attr-class="body-container" className="mx-4">
-          {isAuthenticated ? <DashboardView /> : <LoginView authError={authError} /> }
+          <Suspense fallback={isAuthenticated ? <DashboardView /> : <LoginView />}>
+            <DashboardScreen isAuthenticated={isAuthenticated} />
+          </Suspense>
         </main>
       }
       {screen === "settings" && <SettingsView />}
