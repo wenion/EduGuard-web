@@ -28,6 +28,47 @@ type AuthState = {
 const AuthContext = createContext<AuthState | null>(null);
 
 const STORAGE_KEY = "app_auth_v1"; // localStorage key
+const EXTENSION_STORAGE_KEY = "edvance_auth_token";
+const EXTENSION_MESSAGE_TYPE = "EDVANCE_AUTH_TOKEN";
+
+type ChromeStorageLocal = {
+  set?: (items: Record<string, unknown>, callback?: () => void) => void;
+  remove?: (keys: string | string[], callback?: () => void) => void;
+};
+
+type ChromeLike = {
+  storage?: {
+    local?: ChromeStorageLocal;
+  };
+};
+
+function syncTokenToExtension(token: string | null, expiresAt: number | null) {
+  if (typeof window === "undefined") return;
+
+  const payload = {
+    source: "EdvanceWeb",
+    type: EXTENSION_MESSAGE_TYPE,
+    token,
+    expiresAt,
+    timestamp: Date.now(),
+  };
+
+  // For content scripts listening from the page context.
+  window.postMessage(payload, window.location.origin);
+  window.dispatchEvent(new CustomEvent("eduguard-auth-token", { detail: payload }));
+
+  // Best-effort direct set for extension-capable contexts.
+  const chromeApi = (window as Window & { chrome?: ChromeLike }).chrome;
+  if (token) {
+    chromeApi?.storage?.local?.set?.({ [EXTENSION_STORAGE_KEY]: payload });
+    return;
+  }
+  if (chromeApi?.storage?.local?.remove) {
+    chromeApi.storage.local.remove(EXTENSION_STORAGE_KEY);
+  } else {
+    chromeApi?.storage?.local?.set?.({ [EXTENSION_STORAGE_KEY]: null });
+  }
+}
 
 function readStored(): Partial<LoginResponse> | null {
   try {
@@ -96,9 +137,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(stored.user ?? null);
         setGenaiAccess(!!stored.genai_access);
         setExpiresAt(exp);
+        syncTokenToExtension(stored.token, exp);
         scheduleExpiry(exp);
       } else {
         writeStored(null);
+        syncTokenToExtension(null, null);
       }
     }
     setHydrated(true);
@@ -109,6 +152,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const doLogout = () => {
     clearExpiryTimer();
+    syncTokenToExtension(null, null);
     setToken(null);
     setUser(null);
     setGenaiAccess(false);
@@ -140,6 +184,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         genai_access: data.genai_access,
         user: data.user,
       });
+      syncTokenToExtension(data.token, exp);
       scheduleExpiry(exp);
     } catch (e: any) {
       setErr(e?.message || "Login failed");

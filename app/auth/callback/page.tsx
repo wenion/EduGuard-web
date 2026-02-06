@@ -9,6 +9,23 @@ import { AuthApiError } from "@/lib/authApi";
 const SSO_FAILURE_REDIRECT = "/?authError=sso_failed";
 const NO_LEARNING_DATA_REDIRECT = "/auth/no-learning-data";
 
+function isForbiddenLoginError(error: unknown): boolean {
+  if (error instanceof AuthApiError) {
+    return error.status === 403;
+  }
+
+  if (typeof error === "object" && error !== null && "status" in error) {
+    const status = (error as { status?: unknown }).status;
+    if (status === 403 || status === "403") return true;
+  }
+
+  if (error instanceof Error) {
+    return /\b403\b/.test(error.message);
+  }
+
+  return false;
+}
+
 async function exchangeCode(code: string) {
   const verifier = sessionStorage.getItem("pkce_verifier");
   if (!verifier) throw new Error("Missing PKCE verifier");
@@ -37,7 +54,7 @@ async function exchangeCode(code: string) {
 }
 
 export default function CallbackPage() {
-  const { isAuthenticated, loading, login } = useAuth();
+  const { loading, login } = useAuth();
 
   useEffect(() => {
     if (loading) return;
@@ -66,19 +83,17 @@ export default function CallbackPage() {
         const idToken = tokens?.id_token as string | undefined;
         if (!idToken) throw new Error("Missing id_token");
 
-        if (!isAuthenticated) {
-          try {
-            await login({
-              type: "oidc",
-              idToken,
-            });
-          } catch (error) {
-            if (error instanceof AuthApiError && error.status === 403) {
-              window.location.replace(NO_LEARNING_DATA_REDIRECT);
-              return;
-            }
-            throw error;
+        try {
+          await login({
+            type: "oidc",
+            idToken,
+          });
+        } catch (error) {
+          if (isForbiddenLoginError(error)) {
+            window.location.replace(NO_LEARNING_DATA_REDIRECT);
+            return;
           }
+          throw error;
         }
 
         if (!isCancelled) {
@@ -99,7 +114,7 @@ export default function CallbackPage() {
     return () => {
       isCancelled = true;
     };
-  }, [loading, isAuthenticated, login]);
+  }, [loading, login]);
 
   return <p>Signing you in…</p>;
 }
