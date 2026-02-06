@@ -39,6 +39,7 @@ async function exchangeCode(code: string) {
 export default function CallbackPage() {
   const { loading, login } = useAuth();
   const hasRun = useRef(false);
+  console.log("callback invoked");
   useEffect(() => {
     
     if (loading || hasRun.current) return;
