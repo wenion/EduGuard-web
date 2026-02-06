@@ -84,9 +84,9 @@ export default function CallbackPage() {
         }
       } catch (e) {
         console.error(e);
-        if (!isCancelled) {
-         window.location.replace(SSO_FAILURE_REDIRECT);
-        }
+        // if (!isCancelled) {
+        //  window.location.replace(SSO_FAILURE_REDIRECT);
+        // }
       } finally {
         sessionStorage.removeItem("oidc_state");
         sessionStorage.removeItem("pkce_verifier");
