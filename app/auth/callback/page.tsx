@@ -40,6 +40,7 @@ export default function CallbackPage() {
   const { loading, login } = useAuth();
 
   useEffect(() => {
+    console.log("effect running");
     if (loading) return;
 
     let isCancelled = false;
