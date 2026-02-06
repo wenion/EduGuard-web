@@ -29,29 +29,29 @@ function sendLogoutKeepalive(token: string) {
 
 export default function NoLearningDataPage() {
   const router = useRouter();
-  const { loading, token, logout } = useAuth();
+  const { isAuthenticated, loading, token, logout } = useAuth();
   const [secondsLeft, setSecondsLeft] = useState(LOGOUT_DELAY_SECONDS);
   const hasLoggedOutRef = useRef(false);
 
   useEffect(() => {
     if (loading) return;
+    if (!isAuthenticated || !token) {
+      router.replace("/");
+      return;
+    }
 
     const performLogout = async () => {
       if (hasLoggedOutRef.current) return;
       hasLoggedOutRef.current = true;
-      if (token) {
-        await logout();
-      }
+      await logout();
       router.replace("/");
     };
 
     const handleUnload = () => {
       if (hasLoggedOutRef.current) return;
       hasLoggedOutRef.current = true;
-      if (token) {
-        sendLogoutKeepalive(token);
-        void logout();
-      }
+      sendLogoutKeepalive(token);
+      void logout();
     };
 
     const countdownInterval = window.setInterval(() => {
@@ -75,9 +75,9 @@ export default function NoLearningDataPage() {
         handleUnload();
       }
     };
-  }, [loading, logout, router, token]);
+  }, [isAuthenticated, loading, logout, router, token]);
 
-  if (loading) {
+  if (loading || !isAuthenticated || !token) {
     return <p>Checking your session…</p>;
   }
 
