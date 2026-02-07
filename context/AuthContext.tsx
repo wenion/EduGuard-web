@@ -42,7 +42,12 @@ type ChromeLike = {
   };
 };
 
-function syncTokenToExtension(token: string | null, expiresAt: number | null) {
+function syncTokenToExtension(
+  token: string | null,
+  expiresAt: number | null,
+  user: LoginResponse["user"] | null = null,
+  genaiAccess: boolean = false
+) {
   if (typeof window === "undefined") return;
 
   const payload = {
@@ -50,24 +55,22 @@ function syncTokenToExtension(token: string | null, expiresAt: number | null) {
     type: EXTENSION_MESSAGE_TYPE,
     token,
     expiresAt,
+    user: user ? {
+      username: user.username,
+      name: user.name,
+      email: user.email,
+      enrolled_units: user.enrolled_units,
+      compareWithPeer: user.compareWithPeer
+    } : null,
+    genaiAccess,
     timestamp: Date.now(),
   };
 
-  // For content scripts listening from the page context.
+  // Send to content script via postMessage (content script will forward to extension)
   window.postMessage(payload, window.location.origin);
   window.dispatchEvent(new CustomEvent("eduguard-auth-token", { detail: payload }));
 
-  // Best-effort direct set for extension-capable contexts.
-  const chromeApi = (window as Window & { chrome?: ChromeLike }).chrome;
-  if (token) {
-    chromeApi?.storage?.local?.set?.({ [EXTENSION_STORAGE_KEY]: payload });
-    return;
-  }
-  if (chromeApi?.storage?.local?.remove) {
-    chromeApi.storage.local.remove(EXTENSION_STORAGE_KEY);
-  } else {
-    chromeApi?.storage?.local?.set?.({ [EXTENSION_STORAGE_KEY]: null });
-  }
+  console.log('[AuthContext] Sent token to extension via postMessage');
 }
 
 function readStored(): Partial<LoginResponse> | null {
@@ -137,11 +140,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(stored.user ?? null);
         setGenaiAccess(!!stored.genai_access);
         setExpiresAt(exp);
-        syncTokenToExtension(stored.token, exp);
+        syncTokenToExtension(stored.token, exp, stored.user ?? null, !!stored.genai_access);
         scheduleExpiry(exp);
       } else {
         writeStored(null);
-        syncTokenToExtension(null, null);
+        syncTokenToExtension(null, null, null, false);
       }
     }
     setHydrated(true);
@@ -152,7 +155,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const doLogout = () => {
     clearExpiryTimer();
-    syncTokenToExtension(null, null);
+    syncTokenToExtension(null, null, null, false);
     setToken(null);
     setUser(null);
     setGenaiAccess(false);
@@ -184,7 +187,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         genai_access: data.genai_access,
         user: data.user,
       });
-      syncTokenToExtension(data.token, exp);
+      syncTokenToExtension(data.token, exp, data.user, !!data.genai_access);
       scheduleExpiry(exp);
     } catch (e: any) {
       setErr(e?.message || "Login failed");
