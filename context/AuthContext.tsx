@@ -58,7 +58,6 @@ function syncTokenToExtension(
     user: user ? {
       username: user.username,
       name: user.name,
-      email: user.email,
       enrolled_units: user.enrolled_units,
       compareWithPeer: user.compareWithPeer
     } : null,
