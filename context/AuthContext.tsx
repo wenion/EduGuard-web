@@ -27,7 +27,7 @@ type AuthState = {
 
 const AuthContext = createContext<AuthState | null>(null);
 
-// const STORAGE_KEY = "app_auth_v1"; // localStorage key
+const STORAGE_KEY = "app_auth_v1"; // localStorage key
 // const EXTENSION_STORAGE_KEY = "edvance_auth_token";
 // const EXTENSION_MESSAGE_TYPE = "EDVANCE_AUTH_TOKEN";
 
