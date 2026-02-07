@@ -79,7 +79,7 @@ export default function CallbackPage() {
           }
           throw error;
         }
-
+        console.log(isCancelled);
         if (!isCancelled) {
           window.location.replace("/");
         }
