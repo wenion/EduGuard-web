@@ -28,19 +28,12 @@ type AuthState = {
 const AuthContext = createContext<AuthState | null>(null);
 
 const STORAGE_KEY = "app_auth_v1"; // localStorage key
-const EXTENSION_STORAGE_KEY = "edvance_auth_token";
 const EXTENSION_MESSAGE_TYPE = "EDVANCE_AUTH_TOKEN";
 
-type ChromeStorageLocal = {
-  set?: (items: Record<string, unknown>, callback?: () => void) => void;
-  remove?: (keys: string | string[], callback?: () => void) => void;
-};
-
-type ChromeLike = {
-  storage?: {
-    local?: ChromeStorageLocal;
-  };
-};
+// Extension ID (update this with your published extension ID)
+// For development: Get ID from chrome://extensions after loading unpacked extension
+// For production: This will be the stable published extension ID
+const EXTENSION_ID = process.env.NEXT_PUBLIC_EXTENSION_ID || null;
 
 function syncTokenToExtension(
   token: string | null,
@@ -65,11 +58,26 @@ function syncTokenToExtension(
     timestamp: Date.now(),
   };
 
-  // Send to content script via postMessage (content script will forward to extension)
-  window.postMessage(payload, window.location.origin);
-  window.dispatchEvent(new CustomEvent("eduguard-auth-token", { detail: payload }));
+  // Direct extension messaging (secure - only your extension can receive this)
+  const chromeApi = (window as Window & { chrome?: { runtime?: { sendMessage?: (extensionId: string, message: unknown, responseCallback?: (response?: { success?: boolean }) => void) => void; lastError?: { message: string } } } }).chrome;
 
-  console.log('[AuthContext] Sent token to extension via postMessage');
+  if (!EXTENSION_ID) {
+    console.warn('[AuthContext] EXTENSION_ID not configured - extension sync disabled');
+    return;
+  }
+
+  if (chromeApi?.runtime?.sendMessage) {
+    // Send to specific extension ID (secure direct messaging)
+    chromeApi.runtime.sendMessage(EXTENSION_ID, payload, (response?: { success?: boolean }) => {
+      if (chromeApi.runtime?.lastError) {
+        console.log('[AuthContext] Extension not installed or unavailable:', chromeApi.runtime.lastError.message);
+      } else if (response?.success) {
+        console.log('[AuthContext] Token securely sent to extension');
+      }
+    });
+  } else {
+    console.log('[AuthContext] Chrome extension API not available');
+  }
 }
 
 function readStored(): Partial<LoginResponse> | null {
