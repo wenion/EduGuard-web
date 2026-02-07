@@ -43,7 +43,6 @@ export default function CallbackPage() {
     if (loading || hasRun.current) return;
     hasRun.current = true;
     console.log("callback invoked");
-    let isCancelled = false;
 
     (async () => {
       try {
@@ -79,25 +78,18 @@ export default function CallbackPage() {
           }
           throw error;
         }
-        console.log(isCancelled);
-        if (!isCancelled) {
-          window.location.replace("/");
-        }
+        // Redirect on success - window.location.replace is safe to call
+        // even after component unmount, so no need to check isCancelled
+        window.location.replace("/");
       } catch (e) {
         console.error(e);
-        if (!isCancelled) {
-         window.location.replace(SSO_FAILURE_REDIRECT);
-        }
+        window.location.replace(SSO_FAILURE_REDIRECT);
       } finally {
         sessionStorage.removeItem("oidc_state");
         sessionStorage.removeItem("pkce_verifier");
         sessionStorage.removeItem("id_token");
       }
     })();
-
-    return () => {
-      isCancelled = true;
-    };
   }, [loading, login]);
 
   return <p>Signing you in…</p>;
