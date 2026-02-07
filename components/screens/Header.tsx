@@ -9,12 +9,12 @@ export default function Header() {
     <header
       className={cn(
         "flex items-center justify-between",
-        "bg-sky-700 text-white", // change to your brand bg
+        "bg-primary text-white", // change to your brand bg
         "p-4 shadow-sm",
         "top-0 left-0 w-full z-50"
       )}
     >
-      <h1 className="text-xl font-bold w-3/4">
+      <h1 className="text-3xl w-3/4 font-playfair">
         <span className="inline lg:hidden">Edvance</span>
         <span className="hidden lg:inline">
           Edvance: <i>Empowering All to Thrive</i>

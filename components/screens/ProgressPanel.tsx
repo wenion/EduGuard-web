@@ -311,7 +311,7 @@ export function ProgressPanel({ plannerData, className }: ProgressPanelProps) {
             </Button>
           </div>
 
-          <ScrollArea className="h-[44rem] rounded-md border flex mt-4">
+          <ScrollArea className="min-h-[10rem] max-h-[40rem] rounded-md border flex mt-4">
             <ul className="flex w-full flex-col gap-4 mt-2 px-2" attr-class="list-group monitor-list" id="monitor-progress-list">
               {filteredData.map((action, index) => (
                 <ProgressCard

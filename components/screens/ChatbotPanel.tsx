@@ -114,11 +114,11 @@ export function ChatbotPanel() {
   return (
     <div className="fixed bottom-10 right-5 flex">
       {open && (
-        <Card className="w-[30rem] h-[36rem] bg-teal-800" id="chatWindow" role="dialog" aria-modal="false" aria-label="Edvance chat assistant">
+        <Card className="w-[30rem] h-[36rem] bg-primary" id="chatWindow" role="dialog" aria-modal="false" aria-label="Edvance chat assistant">
           <CardHeader>
             <CardTitle className="text-white">Edvance Chat</CardTitle>
             <CardDescription className="flex items-center text-white">
-              <div className="animate-pulse rounded-full bg-green-200 h-2 w-2 mr-2"/>
+              <div className="animate-pulse rounded-full bg-green-400 h-2 w-2 mr-1.5"/>
               Typically replies in under a minute
             </CardDescription>
             <CardAction className="space-x-2">
@@ -144,7 +144,7 @@ export function ChatbotPanel() {
           </CardHeader>
           <CardContent className="bg-slate-50 h-3/5 px-2">
             {chatlist.length === 0 ? (
-              <div className="flex flex-col items-center justify-center border-2 border-slate-100 rounded-xl bg-white my-4 border-dashed" id="chatEmptyState">
+              <div className="flex flex-col items-center justify-center border-2 border-slate-100 rounded-xl bg-white my-4 border-dashed text-slate-700" id="chatEmptyState">
                 <MessageCircleMoreIcon className="w-10 h-10 mt-2"/>
                 <p className="font-bold" attr-class="empty-title">Start a conversation</p>
                 <p className="text-center mx-2 mb-2" attr-class="empty-copy">Ask for learning tips, feedback summaries, or help planning next steps.</p>
@@ -195,13 +195,13 @@ export function ChatbotPanel() {
         </Card>
       )}
       {hover && !open && (
-        <div className="flex bg-teal-800 rounded-full mr-2">
-          <div className="flex flex-col items-center justify-center text-white h-16 mx-4">
+        <div className="flex bg-primary rounded-full mr-2">
+          <div className="flex flex-col items-center justify-center text-white h-16 mx-4 p-2">
             <div className="flex text-base font-bold">Ask Edvance</div>
             <div className="flex text-sm text-slate-50">Need quick study help?</div>
           </div>
-          <div className="flex text-white items-center h-16 mx-4">
-            <div className="animate-pulse rounded-full bg-green-200 h-2 w-2 mr-2"/>
+          <div className="flex text-white items-center h-16 mr-4 p-2">
+            <div className="animate-pulse rounded-full bg-green-400 h-2 w-2 mr-2"/>
             <div className="flex text-sm uppercase">Online</div>
           </div>
         </div>
@@ -210,7 +210,7 @@ export function ChatbotPanel() {
         <Button
           variant="outline"
           size="icon"
-          className="rounded-full h-16 w-16 border-6 cursor-pointer bg-teal-600 border-teal-800 hover:bg-teal-700"
+          className="animate-pulse rounded-full h-16 w-16 border-6 cursor-pointer bg-primary/75 border-primary/85 hover:border-primary hover:bg-primary/80 hover:animate-none"
           onMouseEnter={() => setHover(true)}
           onMouseLeave={() => setHover(false)}
           onClick={() => setOpen(true)}

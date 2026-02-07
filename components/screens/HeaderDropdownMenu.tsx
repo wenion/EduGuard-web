@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Switch } from "@/components/ui/switch"
-import { User as UserIcon } from 'lucide-react';
+import { User as UserIcon, ChevronDown } from 'lucide-react';
 
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "../ui/button";
@@ -46,8 +46,10 @@ export function HeaderDropdownMenu() {
             variant="ghost"
             attr-class="btn btn-usr dropdown-toggle show"
             data-bs-toggle="dropdown"
+            size="lg"
           >
-            <UserIcon id="userIcon" className="cursor-pointer" />
+            <UserIcon id="userIcon" className="cursor-pointer size-6"/>
+            <ChevronDown className="size-5" />
             <span className="sr-only">Open user menu</span>
           </Button>
         </DropdownMenuTrigger>

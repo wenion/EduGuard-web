@@ -319,7 +319,7 @@ export default function DashboardView({
         {selectedUnitId && (
           <CardFooter className="justify-end">
             <CardAction onClick={backAll}>
-              <Button className="cursor-pointer" id="all-unit-btn">Back to all units <CornerDownLeft /></Button>
+              <Button className="cursor-pointer bg-transparent border-none text-primary font-bold hover:text-white" id="all-unit-btn">Back to all units <CornerDownLeft /></Button>
             </CardAction>
           </CardFooter>
         )}
@@ -455,7 +455,7 @@ export default function DashboardView({
             </TabsContent>
 
             <TabsContent value="planner">
-              <div className="flex flex-col lg:flex-row gap-6 xl:pb-28 lg:h-[80rem] xl:h-[72rem] 2xl:h-[66rem]" id="prescriptive-insights">
+              <div className="flex flex-col lg:flex-row gap-6" id="prescriptive-insights">
                 <FeedbackPanel feedbackSet={data} className="lg:w-1/3 h-full" />
                 <PlannerPanel onAddPlanner={onAddPlanner} className="lg:w-1/3 h-full" />
                 <ProgressPanel plannerData ={plannerData} className="lg:w-1/3 h-full" />
