@@ -50,7 +50,7 @@ function FeedbackCard({
       text: target.innerText,
       tag: "LI",
       id: target.id,
-      className: target.className,
+      className: typeof target.className === "string" ? target.className : null,
       feedback_set_index: index + 1,
     });
   };
@@ -62,7 +62,7 @@ function FeedbackCard({
       text: target.innerText,
       tag: "LI",
       id: id,
-      className: target.className,
+      className: typeof target.className === "string" ? target.className : null,
       feedback_set_index: index + 1,
     });
   }
