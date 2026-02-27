@@ -4,7 +4,7 @@ import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { useAuth } from "@/context/AuthContext";
-import { useEventTracking } from "@/context/Logger";
+import { useGlobalEventTracking } from "@/context/useGlobalEventTracking";
 
 import Header from "@/components/screens/Header";
 import LoginView from "@/components/screens/LoginView";
@@ -23,8 +23,8 @@ function DashboardScreen({ isAuthenticated }: { isAuthenticated: boolean }) {
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>("dashboard");
-  const { isAuthenticated } = useAuth();
-  useEventTracking();
+  const { isAuthenticated, user, logout } = useAuth();
+  useGlobalEventTracking();
 
   return (
     <div className="space-y-6">

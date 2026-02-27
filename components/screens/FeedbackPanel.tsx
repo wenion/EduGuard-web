@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChevronLeft, ChevronRight, GripVertical, Lightbulb } from "lucide-react";
 
 import { Feedback, FeedbackSet } from "@/types/Feedback"; // Import type for feedback
+import { useScrollAreaTracking } from "@/context/useScrollAreaTracking";
+import { useSwitchTracking } from "@/context/useSwitchTracking";
 
 type FeedbackCardProps = {
   feedback: Feedback,
@@ -21,8 +23,11 @@ function FeedbackCard({
   onNext,
   className,
 }: FeedbackCardProps) {
+  const scrollAreaRef = useRef<HTMLDivElement | null>(null);
+  const scrollAreaRef2 = useRef<HTMLDivElement | null>(null);
   const currentWeek = useMemo(() => feedback.cur_week, [feedback]);
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
+  const { logSelectTrace } = useSwitchTracking();
 
   const handleDragStart = (
     e: React.DragEvent,
@@ -31,9 +36,40 @@ function FeedbackCard({
   ) => {
     setDraggingIndex(index);
 
-    e.dataTransfer.setData("text/plain", data[index]);
+    const target = e.target as HTMLDivElement;
+    const payload = {
+      index: index + 1,
+      text: data[index],
+      id: target.id,
+    }
+    e.dataTransfer.setData("application/json", JSON.stringify(payload));
     e.dataTransfer.effectAllowed = "move";
+
+    logSelectTrace({
+      type: "drag start",
+      text: target.innerText,
+      tag: "LI",
+      id: target.id,
+      className: target.className,
+      feedback_set_index: index + 1,
+    });
   };
+
+  const handleClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>, index: number, id: string) => {
+    const target = e.target as HTMLDivElement;
+    logSelectTrace({
+      type: "drag click",
+      text: target.innerText,
+      tag: "LI",
+      id: id,
+      className: target.className,
+      feedback_set_index: index + 1,
+    });
+  }
+
+  useScrollAreaTracking(scrollAreaRef);
+  useScrollAreaTracking(scrollAreaRef2);
+
   return (
     <div className={className}>
       <Card className="h-full">
@@ -60,8 +96,8 @@ function FeedbackCard({
             }
           </p>
 
-          <ScrollArea className="h-60 rounded-md border flex mt-4">
-            <ul id="todo-list" className="flex w-full flex-col gap-4 my-2 px-2">
+          <ScrollArea ref={scrollAreaRef} className="h-60 rounded-md border flex mt-4" attr-class="ul-container">
+            <ul id="todo-list" className="flex w-full flex-col gap-4 my-2 px-2" attr-class="list-group">
               {feedback.actionable_advice.map((advice, index) => {
                 return (
                   <li
@@ -72,7 +108,12 @@ function FeedbackCard({
                     onDragStart={(e) => handleDragStart(e, index, feedback.actionable_advice)}
                   >
                     <span className="m-4 font-sans" attr-class="action-details actionable-items">{advice}</span>
-                    <div className="min-width-40 cursor-grab m-4">
+                    <div
+                      id={`actionItem${index}`}
+                      className="min-width-40 cursor-grab m-4"
+                      attr-class="drag-icon"
+                      onMouseDown={(e) => handleClick(e, index, `actionItem${index}`)}
+                    >
                       <GripVertical />
                     </div>
                   </li>
@@ -87,8 +128,8 @@ function FeedbackCard({
             }
           </p>
 
-          <ScrollArea className="h-60 rounded-md border flex mt-4">
-            <ul id="future-todo-list" className="flex w-full flex-col gap-4 my-2 px-2">
+          <ScrollArea ref={scrollAreaRef2} className="h-60 rounded-md border flex mt-4" attr-class="ul-container mb-2">
+            <ul id="future-todo-list" className="flex w-full flex-col gap-4 my-2 px-2" attr-class="list-group">
               {feedback.feedforward_actions.map((action, index) => (
                 <li
                   id={`actionItem${index + feedback.actionable_advice.length}`}
@@ -98,7 +139,12 @@ function FeedbackCard({
                   onDragStart={(e) => handleDragStart(e, index, feedback.feedforward_actions)}
                 >
                   <span className="m-4" attr-class="action-details actionable-items">{action}</span>
-                  <div className="min-width-40 cursor-grab m-4">
+                  <div
+                    id={`actionItem${index + feedback.actionable_advice.length}`}
+                    className="min-width-40 cursor-grab m-4"
+                    attr-class="drag-icon"
+                    onMouseDown={(e) => handleClick(e, index, `actionItem${index + feedback.actionable_advice.length}`)}
+                  >
                     <GripVertical />
                   </div>
                 </li>
