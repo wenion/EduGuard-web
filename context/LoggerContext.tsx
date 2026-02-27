@@ -14,11 +14,11 @@ import type { Trace } from "@/types/Trace";
 import { sendLog } from "@/lib/authApi";
 import { useAuth } from "@/context/AuthContext";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE!;
+
 type QueuedTrace = {
   data: Trace;
   timestamp: number;
-  source?: string;
-  selectedUnitId?: number | null;
 };
 
 /* ============================== IndexedDB ============================== */
@@ -86,10 +86,8 @@ type LoggerState = {
 
 const LoggerContext = createContext<LoggerState | null>(null);
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE!;
-
 export function LoggerProvider({ children }: { children: ReactNode }) {
-  const { authorizedFetch } = useAuth();
+  const { authorizedFetch, isAuthenticated } = useAuth();
 
   const endpoint = `${API_BASE}/logger/log`;
   const flushInterval = 5000;
@@ -114,22 +112,25 @@ export function LoggerProvider({ children }: { children: ReactNode }) {
       const queue = queueRef.current;
       if (queue.length === 0) return;
 
+      if (!isAuthenticated) return;
+
       const batch = queue.splice(0, batchSize);
       const payload = JSON.stringify(batch);
 
       if (sync && navigator.sendBeacon) {
+      // if (sync) {
         const ok = navigator.sendBeacon(endpoint, payload);
         if (!ok) storeLocally(batch);
         return;
       }
 
       try {
-        const res = await sendLog(authorizedFetch, batch);
+        sendLog(authorizedFetch, batch);
       } catch {
         await storeLocally(batch);
       }
     },
-    [authorizedFetch, endpoint, batchSize]
+    [authorizedFetch, endpoint, batchSize, isAuthenticated]
   );
 
   /* ------------------------------ logEvent ------------------------------ */
@@ -139,9 +140,12 @@ export function LoggerProvider({ children }: { children: ReactNode }) {
       const now = Date.now();
 
       const newEvent: QueuedTrace = {
-        data: { ...eventData, additional: eventData.additional ?? {} },
+        data: {
+          ...eventData,
+          additional: eventData.additional ?? {},
+          source: "web",
+        },
         timestamp: now,
-        source: "client",
       };
 
       const last = queue[queue.length - 1];
@@ -164,16 +168,27 @@ export function LoggerProvider({ children }: { children: ReactNode }) {
         const vertical = dy > 0 ? "down" : dy < 0 ? "up" : "none";
         const horizontal = dx > 0 ? "right" : dx < 0 ? "left" : "none";
 
-        newEvent.data.additional = { vertical, horizontal };
+        newEvent.data.additional = { vertical: vertical, horizontal: horizontal };
 
         if (
           last.data.additional?.vertical === vertical &&
           last.data.additional?.horizontal === horizontal
         ) {
           queue.pop();
-        } else if (!last.data.additional?.status) {
-          last.data.additional.status = "scrolling start";
+        } else if (
+          last.data.additional?.vertical == null || last.data.additional?.horizontal == null
+        ) {
+          last.data.additional = { status: "scrolling start" };
         }
+      }
+      else if (
+        last && eventData &&
+        last.data.target && eventData.target &&
+        (last.data.target.tag !== eventData.target.tag ||
+        last.data.target.id !== eventData.target.id ||
+        last.data.target.class !== eventData.target.class)
+      ) {
+        last.data.additional = { status: "scrolling start" };
       }
 
       /* ---------- RESIZE ---------- */

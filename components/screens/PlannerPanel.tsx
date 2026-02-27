@@ -24,6 +24,7 @@ import {
 import { DatePicker } from "@/components/date-picker";
 import { useAuth } from "@/context/AuthContext";
 import { useScrollAreaTracking } from "@/context/useScrollAreaTracking";
+import { useSwitchTracking } from "@/context/useSwitchTracking";
 import { createActionPlanRequest } from "@/lib/authApi";
 
 type PlannerProps = {
@@ -133,6 +134,8 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
   const [invalidIndex, setInvalidIndex] = useState<number | null>(null);
   const [alert, setAlert] = useState<string | null>(null);
 
+  const { logSelectTrace } = useSwitchTracking();
+
   const items = [
     {title:"S", value: "Make tasks Specific by clearly defining the action and outcome (e.g., “Summarize key points from Week 4 lecture”)."},
     {title:"M", value: "Ensure tasks are Measurable by including criteria to track completion (e.g., “Write a 1-page summary”)."},
@@ -198,17 +201,32 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
-    const newDate = e.dataTransfer.getData("text/plain");
-    const newItem = {item: newDate, date: ""};
-    setData((prev) => [...prev, newItem]);
-    setTimeout(() => {
-      if (lastItemRef.current) {
-        lastItemRef.current.scrollIntoView({
-          behavior: "smooth",
-          block: "nearest",
-        });
-      }
-    }, 0);
+    const json = e.dataTransfer?.getData("application/json");
+    if (json) {
+      const parsed = JSON.parse(json);
+      const newItem = {item: parsed.text, date: ""};
+      setData((prev) => [...prev, newItem]);
+
+      logSelectTrace({
+        type: "drop",
+        text: null,
+        tag: "LI",
+        id: parsed.id,
+        className: null,
+        feedback_set_index: parsed.index,
+        data: null,
+        original_item_id: parsed.id
+      });
+
+      setTimeout(() => {
+        if (lastItemRef.current) {
+          lastItemRef.current.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest",
+          });
+        }
+      }, 0);
+    }
   };
 
   const onNew = () => {
@@ -313,7 +331,19 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
                     content={item.item}
                     onEdit={(index, content) => onUpdate(index, content)}
                     onDelete={(index) => onDelete(index)}
-                    onDateSelect={(date: string) => {item.date = date; if (invalidIndex === index) {setInvalidIndex(null)}}}
+                    onDateSelect={(date: string) => {
+                      item.date = date;
+                      logSelectTrace({
+                        type: 'select date for action',
+                        text: date,
+                        tag: "INPUT",
+                        id: `actionPlanItemDate${index}`,
+                        className: "date-picker",
+                      });
+                      if (invalidIndex === index) {
+                        setInvalidIndex(null)
+                      }
+                    }}
                     isLast={index === data.length - 1}
                     lastRef={lastItemRef}
                     invalid={invalidIndex === index ? true : false}

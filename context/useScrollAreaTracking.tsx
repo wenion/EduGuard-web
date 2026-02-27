@@ -1,12 +1,22 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback,useEffect } from "react";
 import { useLogger } from "@/context/LoggerContext";
+
+import { useAuth } from "@/context/AuthContext";
 
 export function useScrollAreaTracking(
   scrollAreaRef: React.RefObject<HTMLDivElement | null>
 ) {
   const { logEvent } = useLogger();
+  const { selectedUnitId, selectedUnitName, selectedUnitCode, selectedWeek } = useAuth();
+
+  const getCurrentUnitContext = useCallback(() => ({
+    selectedUnitId,
+    selectedUnitName,
+    selectedUnitCode,
+    selectedWeek,
+  }), [selectedUnitId, selectedUnitName, selectedUnitCode, selectedWeek]);
 
   useEffect(() => {
     const root = scrollAreaRef.current;
@@ -32,7 +42,7 @@ export function useScrollAreaTracking(
           class: ul?.className || null,
           text: null,
         },
-        additional: { ...ul?.dataset, },
+        additional: { ...getCurrentUnitContext(), ...ul?.dataset, },
         pageWidth: document.documentElement.scrollWidth,
         pageHeight: document.documentElement.scrollHeight,
         scrollX: window.scrollX,

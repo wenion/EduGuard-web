@@ -56,7 +56,7 @@ import { overallEngagement, weeklyEngagement, assessmentPerformance } from "@/li
 import { OverallLine } from "./LineChart";
 import { WeeklyBar } from "@/components/screens/WeeklyBarChart";
 import { AssessmentBoxplot } from "@/components/screens/BoxplotChart";
-
+import { useSwitchTracking } from "@/context/useSwitchTracking";
 
 type Unit = {
   unit_id: number;
@@ -78,21 +78,40 @@ export default function DashboardView({
     isAuthenticated,
     authorizedFetch,
     selectedUnitId,
-    setUnitId
+    setUnitId,
+    setSelectedUnitName,
+    setSelectedUnitCode,
+    selectedWeek,
+    setSelectedWeek,
   } = useAuth();
   const units = useMemo<Unit[]>(
     () => (user?.enrolled_units as Unit[] | undefined) ?? [],
     [user]
   );
 
+  const { logSelectTrace } = useSwitchTracking();
   useEffect(() => {
     fetchUserProfile(authorizedFetch);
   }, [authorizedFetch])
 
   const registerUnitSelect = (u: Unit) => {
     setUnitId(u.unit_id);
+    setSelectedUnitName(u.unit_name);
+    setSelectedUnitCode(u.unit_code);
     onUnitSelect?.(u);
     loadAnalyticalData(u.unit_id);
+    logSelectTrace({
+      type: "select",
+      text: `${u.unit_code} - ${u.unit_name}`,
+      tag: "tr",
+      id: null,
+      className: "unit-select",
+      unit_id: selectedUnitId,
+      unit_code: u.unit_code,
+      unit_name: u.unit_name,
+      selected_week: null,
+      selection_type: 'unit'
+    });
   };
 
   const onLoadAnalyticalData = () => {
@@ -105,6 +124,9 @@ export default function DashboardView({
 
   const backAll = () => {
     setUnitId(null);
+    setSelectedUnitName(null);
+    setSelectedUnitCode(null);
+    setSelectedWeek(null);
     onUnitSelect?.(null);
     onBackAllUnits?.();
   };
@@ -201,8 +223,6 @@ export default function DashboardView({
   const [weekly, setWeekly] = useState<null | WeeklyEngagementResponse>(null);
   const [assessment, setAssessment] = useState<null | AssessmentPerformanceResponse>(null);
 
-  const [selectedWeek, setSelectedWeek] = useState<string>();
-
   const onChangeSeletor = (week: string) => {
     if (!selectedUnitId) {
       console.error("No unit selected.");
@@ -210,6 +230,14 @@ export default function DashboardView({
     }
     loadWeeklyEngagement(selectedUnitId, week);
     setSelectedWeek(week);
+    logSelectTrace({
+      type: "select",
+      text: `Week ${week}`,
+      tag: "select",
+      id: "week-selector",
+      className: "select-weekly-engagement",
+      selection_type: "week"
+    });
   }
 
   const handleTelemetry = {
@@ -406,10 +434,11 @@ export default function DashboardView({
                     </div>
                   </CardContent>
                   <CardFooter className="justify-center">
-                    <Select value={selectedWeek} onValueChange={onChangeSeletor}>
+                    <Select value={selectedWeek === null ? undefined : selectedWeek} onValueChange={onChangeSeletor}>
                       <SelectTrigger
                         id="week-selector"
                         aria-label="Select a teaching week"
+                        attr-class="select-weekly-engagement"
                         className="w-[200px]"
                       >
                         <SelectValue placeholder="Select week" />

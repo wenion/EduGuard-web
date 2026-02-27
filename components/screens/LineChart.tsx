@@ -7,6 +7,8 @@ import { Chart as ChartJS,
   type ChartOptions
  } from "chart.js";
 import { ensureChartRegistered } from "@/lib/chartSetup";
+import { useSwitchTracking } from "@/context/useSwitchTracking";
+
 ensureChartRegistered();
 
 type Telemetry = {
@@ -48,7 +50,7 @@ type Props = {
 export function OverallLine({
   labels, dUser, lUser, dPeers, lPeers, dPrev, lPrev, showPeer, telemetry,
 }: Props) {
-
+  const { logSelectTrace} = useSwitchTracking();
 
   const data = useMemo(() => ({
     labels,
@@ -131,6 +133,17 @@ export function OverallLine({
               visible: !meta.hidden,
             });
           }
+
+          const canvas = legend.chart.canvas;
+          const chart = legend.chart;
+          const meta = chart.getDatasetMeta(legendItem.datasetIndex);
+          logSelectTrace({
+            type: 'chart legend click',
+            text: `Dataset ${legendItem.datasetIndex} - [${legendItem.text}]: status - ${meta.hidden ? 'hidden' : 'visible'}` || null,
+            tag: canvas.tagName,
+            id: canvas.id || null,
+            className: canvas.className || null,
+          });
         },
       },
       tooltip: { intersect: false, mode: "index" },
@@ -141,6 +154,16 @@ export function OverallLine({
         // @ts-ignore this refers to chart
         const label = this.data?.datasets?.[datasetIndex]?.label ?? "";
         telemetry.onHover({ datasetIndex, index, label });
+
+        const chart = this as any;
+        const canvas = chart?.canvas as HTMLCanvasElement | undefined;
+        logSelectTrace({
+          type: 'chart data hover',
+          text: `Dataset ${datasetIndex} - [${label}] - [hovered] - index ${index}`,
+          tag: canvas?.tagName,
+          id: canvas?.id || null,
+          className: canvas?.className || null,
+        });
       }
     },
     onClick(_event, activeElements) {
@@ -149,6 +172,16 @@ export function OverallLine({
         // @ts-ignore this refers to chart
         const label = this.data?.datasets?.[datasetIndex]?.label ?? "";
         telemetry.onDataClick({ datasetIndex, index, label });
+
+        const nativeEvent = _event.native as MouseEvent | undefined;
+        const canvas = nativeEvent?.target as HTMLCanvasElement | null;
+        logSelectTrace({
+          type: 'chart data click',
+          text: `Dataset ${datasetIndex} - [${label}] - [clicked] - index ${index}` || null,
+          tag: canvas?.tagName,
+          id: canvas?.id || null,
+          className: canvas?.className || null,
+        });
       }
     },
     scales: {

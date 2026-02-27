@@ -1,11 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { useLogger } from "@/context/LoggerContext";
 import type { Trace } from "@/types/Trace";
 
+import { useAuth } from "@/context/AuthContext";
+
 export function useGlobalEventTracking() {
   const { logEvent } = useLogger();
+  const { selectedUnitId, selectedUnitName, selectedUnitCode, selectedWeek } = useAuth();
 
   const getPageMetrics = () => ({
     pageWidth: document.documentElement.scrollWidth,
@@ -13,6 +16,13 @@ export function useGlobalEventTracking() {
     scrollX: window.scrollX,
     scrollY: window.scrollY,
   })
+
+  const getCurrentUnitContext = useCallback(() => ({
+    selectedUnitId,
+    selectedUnitName,
+    selectedUnitCode,
+    selectedWeek,
+  }), [selectedUnitId, selectedUnitName, selectedUnitCode, selectedWeek]);
 
   useEffect(() => {
     // button or tr or others - click
@@ -33,6 +43,7 @@ export function useGlobalEventTracking() {
           text: target.textContent ? String(target.textContent.trim()) : null,
         },
         additional: {
+          ...getCurrentUnitContext(),
           data: { ...target.dataset },
         },
         ...getPageMetrics(),
@@ -54,7 +65,7 @@ export function useGlobalEventTracking() {
           class: null,
           text: null,
         },
-        additional: {},
+        additional: {...getCurrentUnitContext()},
         ...getPageMetrics(),
         eventX: null,
         eventY: null,
@@ -69,16 +80,14 @@ export function useGlobalEventTracking() {
       const data: Trace = {
         type: "scroll",
         target: {
-          tag: "document",
+          tag: "body",
           id: null,
           class: null,
           text: null,
         },
-        additional: {},
+        additional: {...getCurrentUnitContext(),},
         ...getPageMetrics(),
         //Scroll events are not pointer events
-        eventX: null, // event.pageX,
-        eventY: null, // event.pageY,
       };
       logEvent(data);
     };
@@ -98,6 +107,7 @@ export function useGlobalEventTracking() {
           text: event.key,
         },
         additional: {
+          ...getCurrentUnitContext(),
           data: { ...targetElem?.dataset },
         },
         ...getPageMetrics(),
@@ -108,17 +118,21 @@ export function useGlobalEventTracking() {
     };
     document.addEventListener("keydown", handleKeydown);
 
+    // peerCompareToggle - implemented by useSwitchTracking
+
     // checkLoginStatus - expired
 
-    // week-selector on change - select
+    // week-selector on change - implemented by useSwitchTracking
 
-    // drag-icon on mousedown - drag click
-    // drag-icon on mouseleave - 
-    // draggable-item on dragstart - drag start
+    // registerUnitSelect - implemented by useSwitchTracking
 
-    // action-plan-list on drop - drop
+    // drag-click on mousedown - implemented
+    // drag-icon on mouseleave - implemented
+    // draggable-item on dragstart - implemented
 
-    // date-picker on change - select date for action
+    // action-plan-list on drop - implemented
+
+    // date-picker on change - implemented
 
     // legend -onClick - chart legend click
     // onHover - chart data hover
@@ -137,6 +151,6 @@ export function useGlobalEventTracking() {
       document.removeEventListener("scroll", handleScroll);
       document.removeEventListener("keydown", handleKeydown);
     };
-  }, []);
+  }, [selectedUnitId, selectedUnitName, selectedUnitCode, selectedWeek]);
 
 }

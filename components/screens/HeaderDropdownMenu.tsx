@@ -11,10 +11,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Switch } from "@/components/ui/switch"
+import { Button } from "@/components/ui/button";
 import { User as UserIcon } from 'lucide-react';
 
 import { useAuth } from "@/context/AuthContext";
-import { Button } from "../ui/button";
+import { useSwitchTracking } from "@/context/useSwitchTracking";
 
 export function HeaderDropdownMenu() {
   const { logout, user, switchShowPeerRequest, setUnitId } = useAuth();
@@ -36,6 +37,21 @@ export function HeaderDropdownMenu() {
     setUnitId(null);
     await logout();
   };
+
+  const { logSelectTrace } = useSwitchTracking();
+
+  const onCheckedChange = (value: boolean) => {
+    logSelectTrace({
+      type: "select",
+      text: value ? 'enabled' : 'disabled',
+      tag: "input",
+      id: "peerCompareToggle",
+      className: "peer-compare-toggle",
+      toggle_value: value,
+      toggle_type: "compareWithPeer"
+    });
+    setShowPeer(value);
+  }
 
   return (
     <div id="userInfo" role="navigation" aria-label="Account actions">
@@ -72,8 +88,9 @@ export function HeaderDropdownMenu() {
                     <Switch
                       id="peerCompareToggle"
                       checked={compare}
-                      onCheckedChange={() => setShowPeer(!compare)}
+                      onCheckedChange={() => onCheckedChange(!compare)}
                       className="ml-auto"
+                      attr-class="peer-compare-toggle"
                     />
                   </div>
                 </DropdownMenuItem>
