@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { LoginResponse } from "@/types/Auth";
 import { loginRequest, logoutRequest, setShowPeerRequest } from "@/lib/authApi";
 
@@ -17,6 +17,12 @@ type AuthState = {
   error: string | null;
   selectedUnitId: number | null;
   setUnitId: (unitId: number | null) => void;
+  selectedUnitCode: string | null;
+  setSelectedUnitCode: (unitCode: string | null) => void;
+  selectedUnitName: string | null;
+  setSelectedUnitName: (unitName: string | null) => void;
+  selectedWeek: string | null;
+  setSelectedWeek: (week: string | null) => void;
   sessionID: string | null;
   setSessionID: (sessionID: string | null) => void;
   login: (input: LoginInput) => Promise<void>;
@@ -65,7 +71,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const expiryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [selectedUnitId, setSelectedUnitId] = useState<number | null>(null);
-  const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
+  const [selectedUnitCode, setSelectedUnitCode] = useState<string | null>(null);
+  const [selectedUnitName, setSelectedUnitName] = useState<string | null>(null);
+  const [selectedWeek, setSelectedWeek] = useState<string | null>(null);
   const [sessionID, setSessionID] = useState<string | null>(null);
 
   const clearExpiryTimer = () => {
@@ -114,6 +122,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setGenaiAccess(false);
     setExpiresAt(null);
     writeStored(null);
+
+    setSelectedUnitCode(null);
+    setSelectedUnitName(null);
+    setSelectedWeek(null);
+    setSessionID(null);
   };
 
   const login = async (
@@ -161,27 +174,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const authorizedFetch = async (input: RequestInfo | URL, init?: RequestInit) => {
-    if (!token || !expiresAt || Date.now() >= expiresAt) {
-      // expired or missing → behave like 401
-      const r = new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
-      doLogout();
-      return r;
-    }
-    const headers = new Headers(init?.headers || {});
-    headers.set("Authorization", `Bearer ${token}`);
-    // default JSON content-type if body is object
-    const body = init?.body;
-    if (body && typeof body === "object" && !(body instanceof FormData)) {
-      headers.set("Content-Type", "application/json");
-    }
-    const res = await fetch(input, { ...init, headers });
-    if (res.status === 401 || res.status === 403) {
-      // token no longer valid on server → force logout
-      doLogout();
-    }
-    return res;
-  };
+  const authorizedFetch = useCallback(
+    async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (!token || !expiresAt || Date.now() >= expiresAt) {
+        // expired or missing → behave like 401
+        return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+      }
+      const headers = new Headers(init?.headers || {});
+      headers.set("Authorization", `Bearer ${token}`);
+      // default JSON content-type if body is object
+      const body = init?.body;
+      if (body && typeof body === "object" && !(body instanceof FormData)) {
+        headers.set("Content-Type", "application/json");
+      }
+      const res = await fetch(input, { ...init, headers });
+      if (res.status === 401 || res.status === 403) {
+        // token no longer valid on server → force logout
+        doLogout();
+      }
+      return res;
+    },
+    [token, expiresAt]
+  );
 
   const switchShowPeerRequest = async (value: boolean) => {
     try {
@@ -222,13 +236,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     error: error,
     selectedUnitId,
     setUnitId,
+    selectedUnitName,
+    setSelectedUnitName,
+    selectedUnitCode,
+    setSelectedUnitCode,
+    selectedWeek,
+    setSelectedWeek,
     sessionID,
     setSessionID,
     login,
     logout,
     authorizedFetch,
     switchShowPeerRequest,
-  }), [token, user, genaiAccess, expiresAt, authLoading, hydrated, error, selectedUnitId, sessionID]);
+  }), [token, user, genaiAccess, expiresAt, authLoading, hydrated, error, selectedUnitId, selectedUnitName, selectedUnitCode, selectedWeek, sessionID, authorizedFetch]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

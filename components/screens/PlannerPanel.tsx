@@ -23,6 +23,8 @@ import {
 
 import { DatePicker } from "@/components/date-picker";
 import { useAuth } from "@/context/AuthContext";
+import { useScrollAreaTracking } from "@/context/useScrollAreaTracking";
+import { useSwitchTracking } from "@/context/useSwitchTracking";
 import { createActionPlanRequest } from "@/lib/authApi";
 
 type PlannerProps = {
@@ -127,9 +129,12 @@ type PlannerPanelProps = {
 
 export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
   const { authorizedFetch, selectedUnitId } = useAuth();
+  const scrollAreaRef = useRef<HTMLDivElement | null>(null);
   const [data, setData] = useState<{item: string, date: string}[]>([]);
   const [invalidIndex, setInvalidIndex] = useState<number | null>(null);
   const [alert, setAlert] = useState<string | null>(null);
+
+  const { logSelectTrace } = useSwitchTracking();
 
   const items = [
     {title:"S", value: "Make tasks Specific by clearly defining the action and outcome (e.g., “Summarize key points from Week 4 lecture”)."},
@@ -196,17 +201,32 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
-    const newDate = e.dataTransfer.getData("text/plain");
-    const newItem = {item: newDate, date: ""};
-    setData((prev) => [...prev, newItem]);
-    setTimeout(() => {
-      if (lastItemRef.current) {
-        lastItemRef.current.scrollIntoView({
-          behavior: "smooth",
-          block: "nearest",
-        });
-      }
-    }, 0);
+    const json = e.dataTransfer?.getData("application/json");
+    if (json) {
+      const parsed = JSON.parse(json);
+      const newItem = {item: parsed.text, date: ""};
+      setData((prev) => [...prev, newItem]);
+
+      logSelectTrace({
+        type: "drop",
+        text: null,
+        tag: "LI",
+        id: parsed.id,
+        className: null,
+        feedback_set_index: parsed.index,
+        data: null,
+        original_item_id: parsed.id
+      });
+
+      setTimeout(() => {
+        if (lastItemRef.current) {
+          lastItemRef.current.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest",
+          });
+        }
+      }, 0);
+    }
   };
 
   const onNew = () => {
@@ -227,6 +247,8 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
     e.dataTransfer.dropEffect = "move";
   };
 
+  useScrollAreaTracking(scrollAreaRef);
+
   return (
     <div className={className}>
       <Card className="h-full">
@@ -241,11 +263,11 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
         </CardHeader>
         <CardContent>
           <Badge variant="secondary" className="py-2">Set Your Learning Goals</Badge>
-          <CardDescription className="text-lg font-normal text-black font-sans italic pt-2">
+          <CardDescription className="text-lg font-normal text-black font-sans italic pt-2" attr-class="main-text">
             Outline specific learning activities to support your improvement.
           </CardDescription>
 
-          <ul className="text-base text-muted-foreground mt-2 space-y-2">
+          <ul className="text-base text-muted-foreground mt-2 space-y-2" attr-class="insight-guidelines">
             {items.map((item, index) => (
               <li key={index}>
                 <b>{item.title}</b>{": "}
@@ -287,11 +309,13 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
           )}
 
           <ScrollArea
+            ref={scrollAreaRef}
             className="h-80 rounded-md border flex mt-4"
             onDrop={(e) => handleDrop(e)}
             onDragOver={handleDragOver}
+            attr-class="ul-container action-plan-container"
           >
-            <ul className="flex w-full flex-col gap-4 my-2 px-2" ref={scrollRef} id="action-plan-list">
+            <ul className="flex w-full flex-col gap-4 my-2 px-2" ref={scrollRef} id="action-plan-list" attr-class="list-group">
               {data.length === 0 ? (
                 <div
                   className="flex items-center rounded justify-center border h-76 bg-slate-100 font-bold text-2xl select-none text-slate-300 uppercase"
@@ -307,7 +331,19 @@ export function PlannerPanel({onAddPlanner, className}: PlannerPanelProps) {
                     content={item.item}
                     onEdit={(index, content) => onUpdate(index, content)}
                     onDelete={(index) => onDelete(index)}
-                    onDateSelect={(date: string) => {item.date = date; if (invalidIndex === index) {setInvalidIndex(null)}}}
+                    onDateSelect={(date: string) => {
+                      item.date = date;
+                      logSelectTrace({
+                        type: 'select date for action',
+                        text: date,
+                        tag: "INPUT",
+                        id: `actionPlanItemDate${index}`,
+                        className: "date-picker",
+                      });
+                      if (invalidIndex === index) {
+                        setInvalidIndex(null)
+                      }
+                    }}
                     isLast={index === data.length - 1}
                     lastRef={lastItemRef}
                     invalid={invalidIndex === index ? true : false}

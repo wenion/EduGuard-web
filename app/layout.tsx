@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 import { AuthProvider } from "@/context/AuthContext";
+import { LoggerProvider } from "@/context/LoggerContext";
 
 // const geistSans = Geist({
 //   variable: "--font-geist-sans",
@@ -29,7 +30,11 @@ export default function RootLayout({
       <body
         // className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <LoggerProvider>
+            {children}
+          </LoggerProvider>
+        </AuthProvider>
       </body>
     </html>
   );

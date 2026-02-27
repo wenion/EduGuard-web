@@ -7,6 +7,7 @@ import { Chart as ChartJS,
   type ChartOptions
  } from "chart.js";
 import { ensureChartRegistered } from "@/lib/chartSetup";
+import { useSwitchTracking } from "@/context/useSwitchTracking";
 
 type Telemetry = {
   onLegendClick?: (e: { datasetIndex: number; text: string; visible: boolean }) => void; // ← added
@@ -31,8 +32,12 @@ type Props = {
 export function AssessmentBoxplot({
   labels, dUser, lUser, dPeers, lPeers, dPrev, lPrev, showPeer, telemetry,
 }: Props) {
+  const { logSelectTrace } = useSwitchTracking();
 
   useEffect(ensureChartRegistered, []);
+
+  const safeFixed = (value: unknown, digits = 3) =>
+    typeof value === "number" ? value.toFixed(digits) : "N/A";
 
   const data = useMemo(() => ({
     labels,
@@ -109,6 +114,15 @@ export function AssessmentBoxplot({
             visible: !meta.hidden,
           });
           telemetry?.onLegendToggle?.(legendItem.text, !meta.hidden);
+
+          const canvas = legend.chart.canvas;
+          logSelectTrace({
+            type: 'chart legend click',
+            text: `Dataset ${legendItem.datasetIndex} - [${legendItem.text}]: status - ${meta.hidden ? 'hidden' : 'visible'}` || null,
+            tag: canvas.tagName,
+            id: canvas.id || null,
+            className: canvas.className || null,
+          });
         },
       },
       tooltip: {
@@ -124,15 +138,16 @@ export function AssessmentBoxplot({
               return `${label}: ${context.parsed.y}`;
             }
 
-            const v = context.parsed as any;
-            if (!v) return 'unparsed data';
+            const parsed = context.parsed as any;
+            if (!parsed) return 'unparsed data';
 
-            const min = context.parsed.min;
-            const max = context.parsed.max;
-            const q1 = context.parsed.q1;
-            const median = context.parsed.median.toFixed(3);
-            const mean = context.parsed.mean.toFixed(3);
-            const q3 = context.parsed.q3;
+            const min = parsed.min;
+            const max = parsed.max;
+            const q1 = parsed.q1;
+            const q3 = parsed.q3;
+
+            const median = safeFixed(parsed.median);
+            const mean = safeFixed(parsed.mean);
 
             return [
               `${label}: `,
@@ -154,6 +169,16 @@ export function AssessmentBoxplot({
         // @ts-ignore access chart instance via this
         const label = this.data?.datasets?.[datasetIndex]?.label ?? "";
         telemetry.onHover({ datasetIndex, index, label });
+
+        const chart = this as any;
+        const canvas = chart?.canvas as HTMLCanvasElement | undefined;
+        logSelectTrace({
+          type: 'chart data hover',
+          text: `Dataset ${datasetIndex} - [${label}] - [hovered] - index ${index}`,
+          tag: canvas?.tagName,
+          id: canvas?.id || null,
+          className: canvas?.className || null,
+        });
       }
     },
     onClick(_event, activeElements) {
@@ -162,6 +187,16 @@ export function AssessmentBoxplot({
         // @ts-ignore access chart instance via this
         const label = this.data?.datasets?.[datasetIndex]?.label ?? "";
         telemetry.onDataClick({ datasetIndex, index, label });
+
+        const nativeEvent = _event.native as MouseEvent | undefined;
+        const canvas = nativeEvent?.target as HTMLCanvasElement | null;
+        logSelectTrace({
+          type: 'chart data click',
+          text: `Dataset ${datasetIndex} - [${label}] - [clicked] - index ${index}` || null,
+          tag: canvas?.tagName,
+          id: canvas?.id || null,
+          className: canvas?.className || null,
+        });
       }
     },
   }), [telemetry]);
