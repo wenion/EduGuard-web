@@ -24,6 +24,14 @@ export function useGlobalEventTracking() {
     selectedWeek,
   }), [selectedUnitId, selectedUnitName, selectedUnitCode, selectedWeek]);
 
+  const getCurrentTabValue = () => {
+    const activeTrigger = document.querySelector(
+      'div[role="tabpanel"][data-state="active"]'
+    );
+
+    return activeTrigger?.id ?? null;
+  };
+
   useEffect(() => {
     // button or tr or others - click
     const handleClick = (event: MouseEvent) => {
@@ -81,7 +89,7 @@ export function useGlobalEventTracking() {
         type: "scroll",
         target: {
           tag: "body",
-          id: null,
+          id: getCurrentTabValue(),
           class: null,
           text: null,
         },

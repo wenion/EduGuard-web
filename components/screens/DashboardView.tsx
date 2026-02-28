@@ -379,7 +379,7 @@ export default function DashboardView({
                 </Button>
               </TabsTrigger>
             </TabsList>
-            <TabsContent value="insight">
+            <TabsContent value="insight" id="progress">
               <div className="flex flex-col lg:flex-row gap-6 pb-28" id="analytical-insights">
                 <Card className="lg:w-1/3" aria-labelledby="overallEngagementHeading">
                   <CardHeader>
@@ -483,7 +483,7 @@ export default function DashboardView({
               </div>
             </TabsContent>
 
-            <TabsContent value="planner">
+            <TabsContent value="planner" id="feedback">
               <div className="flex flex-col lg:flex-row gap-6 xl:pb-28 lg:h-[80rem] xl:h-[72rem] 2xl:h-[66rem]" id="prescriptive-insights">
                 <FeedbackPanel feedbackSet={data} className="lg:w-1/3 h-full" />
                 <PlannerPanel onAddPlanner={onAddPlanner} className="lg:w-1/3 h-full" />
