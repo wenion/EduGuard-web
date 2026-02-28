@@ -84,44 +84,47 @@ function FeedbackCard({
         </CardHeader>
         <CardContent>
           <Badge variant="secondary" className="py-2">Your Latest Feedback</Badge>
-          <CardDescription className="text-lg font-normal text-black font-sans italic pt-2">
-            <p id="prescriptive-outcome" attr-class="main-text">
-              {feedback.feedback}
-            </p>
-          </CardDescription>
+          {feedback.feedback !== "" && (
+            <CardDescription className="text-lg font-normal text-black font-sans italic pt-2">
+              <p id="prescriptive-outcome" attr-class="main-text">
+                {feedback.feedback}
+              </p>
+            </CardDescription>
+          )}
 
-          <p className="text-base text-muted-foreground mt-2 italic" id="feedback-comment" attr-class="comments">
-            {feedback.actionable_advice.length !== 0 &&
-              `To better achieve the learning outcomes for Weeks 1 - ${currentWeek}, here are some suggestions that you may find helpful:`
-            }
-          </p>
+          {feedback.actionable_advice.length !== 0 && (
+            <>
+              <p className="text-base text-muted-foreground mt-2 italic" id="feedback-comment" attr-class="comments">
+                {`To better achieve the learning outcomes for Weeks 1 - ${currentWeek}, here are some suggestions that you may find helpful:`}
+              </p>
 
-          <ScrollArea ref={scrollAreaRef} className="h-60 rounded-md border flex mt-4" attr-class="ul-container">
-            <ul id="todo-list" className="flex w-full flex-col gap-4 my-2 px-2" attr-class="list-group">
-              {feedback.actionable_advice.map((advice, index) => {
-                return (
-                  <li
-                    id={`actionItem${index}`}
-                    draggable
-                    key={index}
-                    className="flex items-center justify-between rounded-sm border hover:bg-slate-50 text-sm"
-                    onDragStart={(e) => handleDragStart(e, index, feedback.actionable_advice)}
-                  >
-                    <span className="m-4 font-sans" attr-class="action-details actionable-items">{advice}</span>
-                    <div
-                      id={`actionItem${index}`}
-                      className="min-width-40 cursor-grab m-4"
-                      attr-class="drag-icon"
-                      onMouseDown={(e) => handleClick(e, index, `actionItem${index}`)}
-                    >
-                      <GripVertical />
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </ScrollArea>
-
+              <ScrollArea ref={scrollAreaRef} className="h-60 rounded-md border flex mt-4" attr-class="ul-container">
+                <ul id="todo-list" className="flex w-full flex-col gap-4 my-2 px-2" attr-class="list-group">
+                  {feedback.actionable_advice.map((advice, index) => {
+                    return (
+                      <li
+                        id={`actionItem${index}`}
+                        draggable
+                        key={index}
+                        className="flex items-center justify-between rounded-sm border hover:bg-slate-50 text-sm"
+                        onDragStart={(e) => handleDragStart(e, index, feedback.actionable_advice)}
+                      >
+                        <span className="m-4 font-sans" attr-class="action-details actionable-items">{advice}</span>
+                        <div
+                          id={`actionItem${index}`}
+                          className="min-width-40 cursor-grab m-4"
+                          attr-class="drag-icon"
+                          onMouseDown={(e) => handleClick(e, index, `actionItem${index}`)}
+                        >
+                          <GripVertical />
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </ScrollArea>
+            </>
+          )}
           <p className="text-base text-muted-foreground italic mt-4" id="feedforward-comment">
             {feedback.feedforward_actions.length !== 0 &&
               `To support your achievement of the learning outcomes for Week ${currentWeek + 1}, here are some suggestions that you may find helpful:`
