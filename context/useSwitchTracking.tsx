@@ -10,7 +10,7 @@ export function useSwitchTracking() {
 
   const getCurrentUnitContext = useCallback(() => ({
     unit_id: selectedUnitId,
-    unit_name:selectedUnitName,
+    unit_name: selectedUnitName,
     unit_code: selectedUnitCode,
     selected_week: selectedWeek,
   }), [selectedUnitId, selectedUnitName, selectedUnitCode, selectedWeek]);
