@@ -106,10 +106,6 @@ export default function DashboardView({
       tag: "tr",
       id: null,
       className: "unit-select",
-      unit_id: selectedUnitId,
-      unit_code: u.unit_code,
-      unit_name: u.unit_name,
-      selected_week: null,
       selection_type: 'unit'
     });
   };

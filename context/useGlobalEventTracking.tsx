@@ -18,10 +18,10 @@ export function useGlobalEventTracking() {
   })
 
   const getCurrentUnitContext = useCallback(() => ({
-    selectedUnitId,
-    selectedUnitName,
-    selectedUnitCode,
-    selectedWeek,
+    unit_id: selectedUnitId,
+    unit_name: selectedUnitName,
+    unit_code: selectedUnitCode,
+    selected_week: selectedWeek,
   }), [selectedUnitId, selectedUnitName, selectedUnitCode, selectedWeek]);
 
   const getCurrentTabValue = () => {

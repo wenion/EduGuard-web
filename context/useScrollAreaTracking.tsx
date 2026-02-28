@@ -12,10 +12,10 @@ export function useScrollAreaTracking(
   const { selectedUnitId, selectedUnitName, selectedUnitCode, selectedWeek } = useAuth();
 
   const getCurrentUnitContext = useCallback(() => ({
-    selectedUnitId,
-    selectedUnitName,
-    selectedUnitCode,
-    selectedWeek,
+    unit_id: selectedUnitId,
+    unit_name: selectedUnitName,
+    unit_code: selectedUnitCode,
+    selected_week: selectedWeek,
   }), [selectedUnitId, selectedUnitName, selectedUnitCode, selectedWeek]);
 
   useEffect(() => {
@@ -57,5 +57,5 @@ export function useScrollAreaTracking(
     return () => {
       viewport.removeEventListener("scroll", handleScroll);
     };
-  }, [scrollAreaRef, logEvent]);
+  }, [scrollAreaRef, logEvent, getCurrentUnitContext]);
 }
