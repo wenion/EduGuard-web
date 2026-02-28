@@ -9,10 +9,10 @@ export function useSwitchTracking() {
   const { selectedUnitId, selectedUnitName, selectedUnitCode, selectedWeek } = useAuth();
 
   const getCurrentUnitContext = useCallback(() => ({
-    selectedUnitId,
-    selectedUnitName,
-    selectedUnitCode,
-    selectedWeek,
+    unit_id: selectedUnitId,
+    unit_name: selectedUnitName,
+    unit_code: selectedUnitCode,
+    selected_week: selectedWeek,
   }), [selectedUnitId, selectedUnitName, selectedUnitCode, selectedWeek]);
 
   const logSelectTrace = useCallback(

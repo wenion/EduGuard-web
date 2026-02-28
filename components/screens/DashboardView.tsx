@@ -106,10 +106,6 @@ export default function DashboardView({
       tag: "tr",
       id: null,
       className: "unit-select",
-      unit_id: selectedUnitId,
-      unit_code: u.unit_code,
-      unit_name: u.unit_name,
-      selected_week: null,
       selection_type: 'unit'
     });
   };
@@ -379,7 +375,7 @@ export default function DashboardView({
                 </Button>
               </TabsTrigger>
             </TabsList>
-            <TabsContent value="insight">
+            <TabsContent value="insight" id="progress">
               <div className="flex flex-col lg:flex-row gap-6 pb-28" id="analytical-insights">
                 <Card className="lg:w-1/3" aria-labelledby="overallEngagementHeading">
                   <CardHeader>
@@ -483,7 +479,7 @@ export default function DashboardView({
               </div>
             </TabsContent>
 
-            <TabsContent value="planner">
+            <TabsContent value="planner" id="feedback">
               <div className="flex flex-col lg:flex-row gap-6" id="prescriptive-insights">
                 <FeedbackPanel feedbackSet={data} className="lg:w-1/3 h-full" />
                 <PlannerPanel onAddPlanner={onAddPlanner} className="lg:w-1/3 h-full" />

@@ -18,11 +18,19 @@ export function useGlobalEventTracking() {
   })
 
   const getCurrentUnitContext = useCallback(() => ({
-    selectedUnitId,
-    selectedUnitName,
-    selectedUnitCode,
-    selectedWeek,
+    unit_id: selectedUnitId,
+    unit_name: selectedUnitName,
+    unit_code: selectedUnitCode,
+    selected_week: selectedWeek,
   }), [selectedUnitId, selectedUnitName, selectedUnitCode, selectedWeek]);
+
+  const getCurrentTabValue = () => {
+    const activeTrigger = document.querySelector(
+      'div[role="tabpanel"][data-state="active"]'
+    );
+
+    return activeTrigger?.id ?? null;
+  };
 
   useEffect(() => {
     // button or tr or others - click
@@ -81,7 +89,7 @@ export function useGlobalEventTracking() {
         type: "scroll",
         target: {
           tag: "body",
-          id: null,
+          id: getCurrentTabValue(),
           class: null,
           text: null,
         },

@@ -168,7 +168,11 @@ export function LoggerProvider({ children }: { children: ReactNode }) {
         const vertical = dy > 0 ? "down" : dy < 0 ? "up" : "none";
         const horizontal = dx > 0 ? "right" : dx < 0 ? "left" : "none";
 
-        newEvent.data.additional = { vertical: vertical, horizontal: horizontal };
+        newEvent.data.additional = {
+          vertical: vertical,
+          horizontal: horizontal,
+          ...newEvent.data.additional
+        };
 
         if (
           last.data.additional?.vertical === vertical &&
@@ -178,7 +182,10 @@ export function LoggerProvider({ children }: { children: ReactNode }) {
         } else if (
           last.data.additional?.vertical == null || last.data.additional?.horizontal == null
         ) {
-          last.data.additional = { status: "scrolling start" };
+          last.data.additional = {
+            status: "scrolling start",
+            ...last.data.additional
+          };
         }
       }
       else if (
@@ -188,7 +195,10 @@ export function LoggerProvider({ children }: { children: ReactNode }) {
         last.data.target.id !== eventData.target.id ||
         last.data.target.class !== eventData.target.class)
       ) {
-        last.data.additional = { status: "scrolling start" };
+        last.data.additional = {
+          status: "scrolling start",
+          ...last.data.additional
+        };
       }
 
       /* ---------- RESIZE ---------- */
@@ -206,7 +216,7 @@ export function LoggerProvider({ children }: { children: ReactNode }) {
         const vertical = dy > 0 ? "larger" : dy < 0 ? "smaller" : "none";
         const horizontal = dx > 0 ? "larger" : dx < 0 ? "smaller" : "none";
 
-        newEvent.data.additional = { vertical, horizontal };
+        newEvent.data.additional = { vertical, horizontal, ...newEvent.data.additional };
 
         if (
           last.data.additional?.vertical === vertical &&
