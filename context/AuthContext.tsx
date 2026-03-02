@@ -242,7 +242,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const res = await fetch(input, { ...init, headers });
       if (res.status === 401 || res.status === 403) {
         // token no longer valid on server → force logout
-        doLogout();
+        // doLogout();
       }
       return res;
     },

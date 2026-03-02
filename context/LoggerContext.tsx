@@ -115,15 +115,6 @@ export function LoggerProvider({ children }: { children: ReactNode }) {
       if (!isAuthenticated) return;
 
       const batch = queue.splice(0, batchSize);
-      const payload = JSON.stringify(batch);
-
-      if (sync && navigator.sendBeacon) {
-      // if (sync) {
-        const ok = navigator.sendBeacon(endpoint, payload);
-        if (!ok) storeLocally(batch);
-        return;
-      }
-
       try {
         sendLog(authorizedFetch, batch);
       } catch {
