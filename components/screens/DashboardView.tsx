@@ -77,6 +77,7 @@ export default function DashboardView({
     user,
     isAuthenticated,
     authorizedFetch,
+    genaiAccess,
     selectedUnitId,
     setUnitId,
     setSelectedUnitName,
@@ -93,6 +94,13 @@ export default function DashboardView({
   useEffect(() => {
     fetchUserProfile(authorizedFetch);
   }, [authorizedFetch])
+
+  const [data, setData] = useState<FeedbackSet>({ feedback_set: [] });
+  const [plannerData, setPlannerData] = useState<ActionPlanResponse>({ action_plan: [] });
+  const [overall, setOverall] = useState<null | OverallEngagementResponse>(null);
+  const [weekly, setWeekly] = useState<null | WeeklyEngagementResponse>(null);
+  const [assessment, setAssessment] = useState<null | AssessmentPerformanceResponse>(null);
+  const [activeTab, setActiveTab] = useState<"insight" | "planner">("insight");
 
   const registerUnitSelect = (u: Unit) => {
     setUnitId(u.unit_id);
@@ -123,12 +131,15 @@ export default function DashboardView({
     setSelectedUnitName(null);
     setSelectedUnitCode(null);
     setSelectedWeek(null);
+    setData({ feedback_set: [] });
+    setPlannerData({ action_plan: [] });
+    setOverall(null);
+    setWeekly(null);
+    setAssessment(null);
+    setActiveTab("insight");
     onUnitSelect?.(null);
     onBackAllUnits?.();
   };
-
-  const [data, setData] = useState<FeedbackSet>({ feedback_set: [] });
-  const [plannerData, setPlannerData] = useState<ActionPlanResponse>({ action_plan: [] });
 
   const loadPrescriptiveData = () => {
     loadFeedback();
@@ -175,6 +186,7 @@ export default function DashboardView({
   const loadEngagement = async(unit: number, mode = "weekly") => {
     try {
       const o = await overallEngagement(authorizedFetch, unit, mode);
+      console.log(o);
       const coercedOverall = {
         ...o,
         user: o.user.map(Number),
@@ -189,6 +201,7 @@ export default function DashboardView({
   const loadWeeklyEngagement = async (unit: number, week: string =  "latest") => {
     try {
       const w = await weeklyEngagement(authorizedFetch, unit, week);
+      console.log(w);
       const coercedWeekly = {
         ...w,
         user: w.user.map(Number),
@@ -198,12 +211,13 @@ export default function DashboardView({
       setWeekly(coercedWeekly);
       setSelectedWeek(w.selected_week.toString());
     } catch (e: any) {
-      console.error("loadWeeklyEngagement", unit, "error!")
+      console.error("loadWeeklyEngagement", unit, "error!");
     }
   };
   const loadAssessment = async (unit: number) => {
     try {
       const ap = await assessmentPerformance(authorizedFetch, unit);
+      console.log(ap);
       setAssessment(ap);
     } catch (e: any) {
       console.error("loadAssessment", unit, "error!")
@@ -213,11 +227,6 @@ export default function DashboardView({
   if (!isAuthenticated) {
     return <p className="text-muted">Please sign in to view your units.</p>;
   }
-
-// ===== chart state =====
-  const [overall, setOverall] = useState<null | OverallEngagementResponse>(null);
-  const [weekly, setWeekly] = useState<null | WeeklyEngagementResponse>(null);
-  const [assessment, setAssessment] = useState<null | AssessmentPerformanceResponse>(null);
 
   const onChangeSeletor = (week: string) => {
     if (!selectedUnitId) {
@@ -324,7 +333,7 @@ export default function DashboardView({
               </TableRow>
             </TableHeader>
             <TableBody id="unitList">
-              {units.map((unit) => (
+              {units.filter((unit) => !selectedUnitId || unit.unit_id === selectedUnitId).map((unit) => (
                 <TableRow
                   className="cursor-pointer unit-select"
                   key={unit.unit_id}
@@ -351,7 +360,7 @@ export default function DashboardView({
 
       {selectedUnitId && user && (
         <>
-          <Tabs defaultValue="insight" className="w-full pt-4">
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "insight" | "planner")} className="w-full pt-4">
             <TabsList className="flex m-auto w-full" id="insight-select-container" role="tablist" aria-label="Insight families">
               <TabsTrigger value="insight" asChild>
                 <Button
@@ -375,9 +384,9 @@ export default function DashboardView({
                 </Button>
               </TabsTrigger>
             </TabsList>
-            <TabsContent value="insight" id="progress">
-              <div className="flex flex-col lg:flex-row gap-6 pb-28" id="analytical-insights">
-                <Card className="lg:w-1/3" aria-labelledby="overallEngagementHeading">
+            <TabsContent value="insight" id="progress" className="data-[state=active]:animate-in data-[state=active]:fade-in-0 data-[state=active]:duration-300">
+              <div key={activeTab} className="flex flex-col lg:flex-row gap-6 pb-28" id="analytical-insights">
+                <Card className="lg:w-1/3 animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both" aria-labelledby="overallEngagementHeading">
                   <CardHeader>
                     <CardTitle>
                       <h2 id="overallEngagementHeading">Your overall time engagement in this unit (measured by minutes)</h2>
@@ -398,13 +407,17 @@ export default function DashboardView({
                           telemetry={handleTelemetry}
                         />
                       ) : (
-                        <p className="text-sm text-muted-foreground">Select a unit to load the chart…</p>
+                        <div className="flex items-center justify-center h-full rounded-lg bg-slate-50 border border-dashed border-slate-200">
+                          <p className="text-base text-muted-foreground text-center px-4">
+                            Learning data will be available from Week 1 onwards.
+                          </p>
+                        </div>
                       )}
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className="lg:w-1/3" aria-labelledby="weeklyEngagementHeading">
+                <Card className="lg:w-1/3 animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both [animation-delay:150ms]" aria-labelledby="weeklyEngagementHeading">
                   <CardHeader>
                     <CardTitle>
                       <h2 id="weeklyEngagementHeading">Your time engagement with course materials from a specific week (measured by minutes)</h2>
@@ -425,7 +438,11 @@ export default function DashboardView({
                           telemetry={handleTelemetry}
                         />
                       ) : (
-                        <p className="text-sm text-muted-foreground">Select a unit to load the chart…</p>
+                        <div className="flex items-center justify-center h-full rounded-lg bg-slate-50 border border-dashed border-slate-200">
+                          <p className="text-base text-muted-foreground text-center px-4">
+                            Learning data will be available from Week 1 onwards.
+                          </p>
+                        </div>
                       )}
                     </div>
                   </CardContent>
@@ -452,15 +469,15 @@ export default function DashboardView({
                   </CardFooter>
                 </Card>
 
-                {assessment && (
-                  <Card className="lg:w-1/3" aria-labelledby="assessmentHeading">
-                    <CardHeader>
-                      <CardTitle>
-                        <h2 id="assessmentHeading">Assessment Mark Distributions</h2>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="h-80">
+                <Card className="lg:w-1/3 animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both [animation-delay:300ms]" aria-labelledby="assessmentHeading">
+                  <CardHeader>
+                    <CardTitle>
+                      <h2 id="assessmentHeading">Assessment Mark Distributions</h2>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-80">
+                      {assessment ? (
                         <AssessmentBoxplot
                           labels={assessment.label}
                           dUser={assessment.user}              // line data (your performance)
@@ -472,25 +489,31 @@ export default function DashboardView({
                           showPeer={!user.compareWithPeer}
                           telemetry={handleTelemetry}
                         />
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
+                      ) : (
+                        <div className="flex items-center justify-center h-full rounded-lg bg-slate-50 border border-dashed border-slate-200">
+                          <p className="text-base text-muted-foreground text-center px-4">
+                            Assessment data is only available after the releasing of grades for the first assessment activity.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </TabsContent>
 
-            <TabsContent value="planner" id="feedback">
-              <div className="flex flex-col lg:flex-row gap-6 xl:pb-28 lg:h-[80rem] xl:h-[72rem] 2xl:h-[66rem]" id="prescriptive-insights">
-                <FeedbackPanel feedbackSet={data} className="lg:w-1/3 h-full" />
-                <PlannerPanel onAddPlanner={onAddPlanner} className="lg:w-1/3 h-full" />
-                <ProgressPanel plannerData ={plannerData} className="lg:w-1/3 h-full" />
+            <TabsContent value="planner" id="feedback" className="data-[state=active]:animate-in data-[state=active]:fade-in-0 data-[state=active]:duration-300">
+              <div key={activeTab} className="flex flex-col lg:flex-row gap-6 xl:pb-28 lg:h-[80rem] xl:h-[72rem] 2xl:h-[66rem]" id="prescriptive-insights">
+                <FeedbackPanel feedbackSet={data} className="lg:w-1/3 h-full animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both" />
+                <PlannerPanel onAddPlanner={onAddPlanner} className="lg:w-1/3 h-full animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both [animation-delay:150ms]" />
+                <ProgressPanel plannerData={plannerData} className="lg:w-1/3 h-full animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both [animation-delay:300ms]" />
               </div>
             </TabsContent>
           </Tabs>
         </>
       )}
 
-      {selectedUnitId && (<ChatbotPanel />)}
+      {selectedUnitId && genaiAccess && (<ChatbotPanel />)}
     </>
   );
 }

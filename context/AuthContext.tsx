@@ -59,7 +59,6 @@ function updateStored(updates: Partial<LoginResponse>) {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<LoginResponse["user"] | null>(null);
-  const [genaiAccess, setGenaiAccess] = useState(false);
   const [expiresAt, setExpiresAt] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setErr] = useState<string | null>(null);
@@ -97,7 +96,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (exp > now) {
         setToken(stored.token);
         setUser(stored.user ?? null);
-        setGenaiAccess(!!stored.genai_access);
         setExpiresAt(exp);
         scheduleExpiry(exp);
       } else {
@@ -114,7 +112,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     clearExpiryTimer();
     setToken(null);
     setUser(null);
-    setGenaiAccess(false);
     setExpiresAt(null);
     writeStored(null);
 
@@ -132,12 +129,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const exp = Math.floor(data.expires_at); // backend provides epoch ms (can be fractional)
       setToken(data.token);
       setUser(data.user);
-      setGenaiAccess(!!data.genai_access);
       setExpiresAt(exp);
       writeStored({
         token: data.token,
         expires_at: exp,
-        genai_access: data.genai_access,
         user: data.user,
       });
       scheduleExpiry(exp);
@@ -216,7 +211,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<AuthState>(() => ({
     token,
     user,
-    genaiAccess,
+    genaiAccess: !!(user?.enrolled_units.find(u => u.unit_id === selectedUnitId)?.genai_permitted),
     expiresAt,
     isAuthenticated: !!token && !!expiresAt && Date.now() < expiresAt,
     loading,
@@ -235,7 +230,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     logout,
     authorizedFetch,
     switchShowPeerRequest,
-  }), [token, user, genaiAccess, expiresAt, loading, error, selectedUnitId, selectedUnitName, selectedUnitCode, selectedWeek, sessionID, authorizedFetch]);
+  }), [token, user, expiresAt, loading, error, selectedUnitId, selectedUnitName, selectedUnitCode, selectedWeek, sessionID, authorizedFetch]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
