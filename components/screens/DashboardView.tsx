@@ -386,7 +386,7 @@ export default function DashboardView({
             </TabsList>
             <TabsContent value="insight" id="progress">
               <div className="flex flex-col lg:flex-row gap-6 pb-28" id="analytical-insights">
-                <Card className="lg:w-1/3" aria-labelledby="overallEngagementHeading">
+                <Card className={`${assessment ? "lg:w-1/3" : "lg:w-1/2"}`} aria-labelledby="overallEngagementHeading">
                   <CardHeader>
                     <CardTitle>
                       <h2 id="overallEngagementHeading">Your overall time engagement in this unit (measured by minutes)</h2>
@@ -407,13 +407,13 @@ export default function DashboardView({
                           telemetry={handleTelemetry}
                         />
                       ) : (
-                        <p className="text-sm text-muted-foreground">Select a unit to load the chart…</p>
+                        <p className="text-sm text-muted-foreground">We'll start showing your data from Week 2…</p>
                       )}
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className="lg:w-1/3" aria-labelledby="weeklyEngagementHeading">
+                <Card className={`${assessment ? "lg:w-1/3" : "lg:w-1/2"}`} aria-labelledby="weeklyEngagementHeading">
                   <CardHeader>
                     <CardTitle>
                       <h2 id="weeklyEngagementHeading">Your time engagement with course materials from a specific week (measured by minutes)</h2>
@@ -434,7 +434,7 @@ export default function DashboardView({
                           telemetry={handleTelemetry}
                         />
                       ) : (
-                        <p className="text-sm text-muted-foreground">Select a unit to load the chart…</p>
+                        <p className="text-sm text-muted-foreground">We'll start showing your data from Week 2…</p>
                       )}
                     </div>
                   </CardContent>
