@@ -114,7 +114,7 @@ export function ChatbotPanel() {
   return (
     <div className="fixed bottom-10 right-5 flex">
       {open && (
-        <Card className="w-[30rem] h-[36rem] bg-primary" id="chatWindow" role="dialog" aria-modal="false" aria-label="Edvance chat assistant">
+        <Card className="w-[30rem] h-[36rem] min-w-96 min-h-100 max-w-[90vw] max-h-[90vh] resize overflow-hidden bg-teal-800" id="chatWindow" role="dialog" aria-modal="false" aria-label="Edvance chat assistant">
           <CardHeader>
             <CardTitle className="text-white">Edvance Chat</CardTitle>
             <CardDescription className="flex items-center text-white">
@@ -142,7 +142,7 @@ export function ChatbotPanel() {
               </Button>
             </CardAction>
           </CardHeader>
-          <CardContent className="bg-slate-50 h-3/5 px-2">
+          <CardContent className="bg-slate-50 flex-1 min-h-0 px-2">
             {chatlist.length === 0 ? (
               <div className="flex flex-col items-center justify-center border-2 border-slate-100 rounded-xl bg-white my-4 border-dashed text-slate-700" id="chatEmptyState">
                 <MessageCircleMoreIcon className="w-10 h-10 mt-2"/>

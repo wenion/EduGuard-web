@@ -10,7 +10,7 @@ type LoginInput =
 type AuthState = {
   token: string | null;
   user: LoginResponse["user"] | null;
-  genaiAccess: boolean;
+  loginResponse: LoginResponse | null;
   expiresAt: number | null;       // epoch ms
   isAuthenticated: boolean;
   loading: boolean;
@@ -45,7 +45,6 @@ function syncTokenToExtension(
   token: string | null,
   expiresAt: number | null,
   user: LoginResponse["user"] | null = null,
-  genaiAccess: boolean = false
 ) {
   if (typeof window === "undefined") return;
 
@@ -60,7 +59,6 @@ function syncTokenToExtension(
       enrolled_units: user.enrolled_units,
       compareWithPeer: user.compareWithPeer
     } : null,
-    genaiAccess,
     timestamp: Date.now(),
   };
 
@@ -114,11 +112,11 @@ function updateStored(updates: Partial<LoginResponse>) {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<LoginResponse["user"] | null>(null);
-  const [genaiAccess, setGenaiAccess] = useState(false);
   const [expiresAt, setExpiresAt] = useState<number | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
   const [error, setErr] = useState<string | null>(null);
+  const [loginResponse, setLoginResponse] = useState<LoginResponse | null>(null);
   const expiryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [selectedUnitId, setSelectedUnitId] = useState<number | null>(null);
@@ -153,13 +151,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (exp > now) {
         setToken(stored.token);
         setUser(stored.user ?? null);
-        setGenaiAccess(!!stored.genai_access);
+        setLoginResponse(stored as LoginResponse);
         setExpiresAt(exp);
-        syncTokenToExtension(stored.token, exp, stored.user ?? null, !!stored.genai_access);
+        syncTokenToExtension(stored.token, exp, stored.user ?? null);
         scheduleExpiry(exp);
       } else {
         writeStored(null);
-        syncTokenToExtension(null, null, null, false);
+        syncTokenToExtension(null, null, null);
       }
     }
     setHydrated(true);
@@ -170,10 +168,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const doLogout = () => {
     clearExpiryTimer();
-    syncTokenToExtension(null, null, null, false);
+    syncTokenToExtension(null, null, null);
     setToken(null);
     setUser(null);
-    setGenaiAccess(false);
+    setLoginResponse(null);
     setExpiresAt(null);
     writeStored(null);
 
@@ -199,15 +197,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const exp = Math.floor(data.expires_at); // backend provides epoch ms (can be fractional)
       setToken(data.token);
       setUser(data.user);
-      setGenaiAccess(!!data.genai_access);
+      setLoginResponse(data);
       setExpiresAt(exp);
       writeStored({
         token: data.token,
         expires_at: exp,
-        genai_access: data.genai_access,
         user: data.user,
       });
-      syncTokenToExtension(data.token, exp, data.user, !!data.genai_access);
+      syncTokenToExtension(data.token, exp, data.user);
       scheduleExpiry(exp);
     } catch (e: any) {
       setErr(e?.message || "Login failed");
@@ -284,7 +281,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<AuthState>(() => ({
     token,
     user,
-    genaiAccess,
+    loginResponse,
     expiresAt,
     isAuthenticated: !!token && !!expiresAt && Date.now() < expiresAt,
     loading: authLoading || !hydrated,
@@ -303,7 +300,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     logout,
     authorizedFetch,
     switchShowPeerRequest,
-  }), [token, user, genaiAccess, expiresAt, authLoading, hydrated, error, selectedUnitId, selectedUnitName, selectedUnitCode, selectedWeek, sessionID, authorizedFetch]);
+  }), [token, user, loginResponse, expiresAt, authLoading, hydrated, error, selectedUnitId, selectedUnitName, selectedUnitCode, selectedWeek, sessionID, authorizedFetch]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

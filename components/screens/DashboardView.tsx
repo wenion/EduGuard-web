@@ -75,6 +75,7 @@ export default function DashboardView({
 }) {
   const {
     user,
+    loginResponse,
     isAuthenticated,
     authorizedFetch,
     selectedUnitId,
@@ -89,10 +90,18 @@ export default function DashboardView({
     [user]
   );
 
+  const [chatBotShow, setChatBotShow] = useState(false);
   const { logSelectTrace } = useSwitchTracking();
   useEffect(() => {
     fetchUserProfile(authorizedFetch);
   }, [authorizedFetch])
+
+  useEffect(() => {
+    const genaiPermitted = loginResponse?.user.enrolled_units.find(
+      (unit) => unit.unit_id === selectedUnitId
+    )?.genai_permitted;
+    setChatBotShow(!!genaiPermitted);
+  }, [selectedUnitId, loginResponse]);
 
   const registerUnitSelect = (u: Unit) => {
     setUnitId(u.unit_id);
@@ -490,7 +499,7 @@ export default function DashboardView({
         </>
       )}
 
-      {selectedUnitId && (<ChatbotPanel />)}
+      {selectedUnitId && chatBotShow &&(<ChatbotPanel />)}
     </>
   );
 }
