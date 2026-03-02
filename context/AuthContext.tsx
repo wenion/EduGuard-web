@@ -6,7 +6,7 @@ import { loginRequest, logoutRequest, setShowPeerRequest } from "@/lib/authApi";
 type AuthState = {
   token: string | null;
   user: LoginResponse["user"] | null;
-  genaiAccess: boolean;
+  loginResponse: LoginResponse | null;
   expiresAt: number | null;       // epoch ms
   isAuthenticated: boolean;
   loading: boolean;
@@ -59,10 +59,10 @@ function updateStored(updates: Partial<LoginResponse>) {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<LoginResponse["user"] | null>(null);
-  const [genaiAccess, setGenaiAccess] = useState(false);
   const [expiresAt, setExpiresAt] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setErr] = useState<string | null>(null);
+  const [loginResponse, setLoginResponse] = useState<LoginResponse | null>(null);
   const expiryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [selectedUnitId, setSelectedUnitId] = useState<number | null>(null);
@@ -97,7 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (exp > now) {
         setToken(stored.token);
         setUser(stored.user ?? null);
-        setGenaiAccess(!!stored.genai_access);
+        setLoginResponse(stored as LoginResponse);
         setExpiresAt(exp);
         scheduleExpiry(exp);
       } else {
@@ -114,7 +114,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     clearExpiryTimer();
     setToken(null);
     setUser(null);
-    setGenaiAccess(false);
+    setLoginResponse(null);
     setExpiresAt(null);
     writeStored(null);
 
@@ -132,12 +132,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const exp = Math.floor(data.expires_at); // backend provides epoch ms (can be fractional)
       setToken(data.token);
       setUser(data.user);
-      setGenaiAccess(!!data.genai_access);
+      setLoginResponse(data);
       setExpiresAt(exp);
       writeStored({
         token: data.token,
         expires_at: exp,
-        genai_access: data.genai_access,
         user: data.user,
       });
       scheduleExpiry(exp);
@@ -216,7 +215,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<AuthState>(() => ({
     token,
     user,
-    genaiAccess,
+    loginResponse,
     expiresAt,
     isAuthenticated: !!token && !!expiresAt && Date.now() < expiresAt,
     loading,
@@ -235,7 +234,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     logout,
     authorizedFetch,
     switchShowPeerRequest,
-  }), [token, user, genaiAccess, expiresAt, loading, error, selectedUnitId, selectedUnitName, selectedUnitCode, selectedWeek, sessionID, authorizedFetch]);
+  }), [token, user, loginResponse, expiresAt, loading, error, selectedUnitId, selectedUnitName, selectedUnitCode, selectedWeek, sessionID, authorizedFetch]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
