@@ -111,11 +111,11 @@ export default function LoginForm({ initialError }: LoginFormProps) {
             </div>
           ) : (
             <div className="grid gap-1.5">
-              <Label htmlFor="loginSsoUsername">Username</Label>
+              <Label htmlFor="loginSsoUsername">Monash Account</Label>
               <Input
                 id="loginSsoUsername"
                 type="text"
-                placeholder="Your username"
+                placeholder="your.name@monash.edu"
                 value={username}
                 onChange={(e) => {
                   setDismissInitialError(true);
@@ -125,10 +125,8 @@ export default function LoginForm({ initialError }: LoginFormProps) {
                 disabled={loading}
                 autoComplete="username"
                 aria-invalid={error ? "true" : "false"}
+                className="mb-4"
               />
-              <p className="text-sm text-slate-500" id="loginHelper">
-                Use your institutional username for SSO.
-              </p>
             </div>
           )}
 
@@ -148,7 +146,7 @@ export default function LoginForm({ initialError }: LoginFormProps) {
                 disabled={loading}
                 id="ssoLoginButton"
               >
-                Continue with SSO
+                Continue with your Monash account
               </Button>
               <Button
                 type="button"
@@ -179,7 +177,7 @@ export default function LoginForm({ initialError }: LoginFormProps) {
                 disabled={loading}
                 id="backToSsoButton"
               >
-                Back to SSO login
+                Back to Monash account login
               </Button>
             </>
           )}
