@@ -36,7 +36,9 @@ export function useGlobalEventTracking() {
     // button or tr or others - click
     const handleClick = (event: MouseEvent) => {
       const originalTarget = event.target as HTMLElement | null;
-      if (!originalTarget) return null;
+      if (!originalTarget) return;
+
+      if (originalTarget.tagName === "HTML") return;
 
       const button = originalTarget.closest("button");
       const row = originalTarget.closest("tr");
