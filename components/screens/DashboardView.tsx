@@ -465,7 +465,7 @@ export default function DashboardView({
                   </CardFooter>
                 </Card>
 
-                {assessment && (
+                {assessment && assessment.user?.length > 0 && (
                   <Card className="lg:w-1/3" aria-labelledby="assessmentHeading">
                     <CardHeader>
                       <CardTitle>
