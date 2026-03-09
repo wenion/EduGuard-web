@@ -28,6 +28,20 @@ function FeedbackCard({
   const currentWeek = useMemo(() => feedback.cur_week, [feedback]);
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
   const { logSelectTrace } = useSwitchTracking();
+  const feedbackSummary = useMemo(() => {
+    const feedForwardActionCount = feedback.feedforward_actions.length;
+    const actionableAdviceCount = feedback.actionable_advice.length;
+    if (feedback.feedback === "" && feedForwardActionCount > 0 && actionableAdviceCount > 0) {
+      return "You have made some progress so far. Continue putting in effort and spend more time reviewing the materials.";
+    }
+    else if (feedback.feedback === "" && feedForwardActionCount === 0 && actionableAdviceCount > 0) {
+      return "You have made some progress so far. Continue putting in effort and spend more time reviewing the materials. You may also consider planning the suggested future learning activities to support your continued progress.";
+    }
+    else if (feedback.feedback === "" && feedForwardActionCount > 0 && actionableAdviceCount === 0) {
+      return "You have made some progress so far. Continue putting in effort and spend more time reviewing the materials. You may also want to focus on the suggested learning activities below to further strengthen your understanding.";
+    }
+    return feedback.feedback;
+  }, [feedback.feedback, feedback.feedforward_actions.length, feedback.actionable_advice.length]);
 
   const handleDragStart = (
     e: React.DragEvent,
@@ -84,10 +98,10 @@ function FeedbackCard({
         </CardHeader>
         <CardContent>
           <Badge variant="secondary" className="py-2">Your Latest Feedback</Badge>
-          {feedback.feedback !== "" && (
+          {feedbackSummary !== "" && (
             <CardDescription className="text-lg font-normal text-black font-sans italic pt-2">
               <p id="prescriptive-outcome" attr-class="main-text">
-                {feedback.feedback}
+                {feedbackSummary}
               </p>
             </CardDescription>
           )}
@@ -125,35 +139,40 @@ function FeedbackCard({
               </ScrollArea>
             </>
           )}
-          <p className="text-base text-muted-foreground italic mt-4" id="feedforward-comment">
-            {feedback.feedforward_actions.length !== 0 &&
-              `To support your achievement of the learning outcomes for Week ${currentWeek + 1}, here are some suggestions that you may find helpful:`
-            }
-          </p>
 
-          <ScrollArea ref={scrollAreaRef2} className="h-60 rounded-md border flex mt-4" attr-class="ul-container mb-2">
-            <ul id="future-todo-list" className="flex w-full flex-col gap-4 my-2 px-2" attr-class="list-group">
-              {feedback.feedforward_actions.map((action, index) => (
-                <li
-                  id={`actionItem${index + feedback.actionable_advice.length}`}
-                  draggable
-                  key={index}
-                  className="flex items-center justify-between rounded-sm border hover:bg-slate-50 text-sm"
-                  onDragStart={(e) => handleDragStart(e, index, feedback.feedforward_actions)}
-                >
-                  <span className="m-4" attr-class="action-details actionable-items">{action}</span>
-                  <div
-                    id={`actionItem${index + feedback.actionable_advice.length}`}
-                    className="min-width-40 cursor-grab m-4"
-                    attr-class="drag-icon"
-                    onMouseDown={(e) => handleClick(e, index, `actionItem${index + feedback.actionable_advice.length}`)}
-                  >
-                    <GripVertical />
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </ScrollArea>
+          {feedback.feedforward_actions.length !== 0 && (
+            <>
+              <p className="text-base text-muted-foreground italic mt-4" id="feedforward-comment">
+                {feedback.feedforward_actions.length !== 0 &&
+                  `To support your achievement of the learning outcomes for Week ${currentWeek + 1}, here are some suggestions that you may find helpful:`
+                }
+              </p>
+
+              <ScrollArea ref={scrollAreaRef2} className="h-60 rounded-md border flex mt-4" attr-class="ul-container mb-2">
+                <ul id="future-todo-list" className="flex w-full flex-col gap-4 my-2 px-2" attr-class="list-group">
+                  {feedback.feedforward_actions.map((action, index) => (
+                    <li
+                      id={`actionItem${index + feedback.actionable_advice.length}`}
+                      draggable
+                      key={index}
+                      className="flex items-center justify-between rounded-sm border hover:bg-slate-50 text-sm"
+                      onDragStart={(e) => handleDragStart(e, index, feedback.feedforward_actions)}
+                    >
+                      <span className="m-4" attr-class="action-details actionable-items">{action}</span>
+                      <div
+                        id={`actionItem${index + feedback.actionable_advice.length}`}
+                        className="min-width-40 cursor-grab m-4"
+                        attr-class="drag-icon"
+                        onMouseDown={(e) => handleClick(e, index, `actionItem${index + feedback.actionable_advice.length}`)}
+                      >
+                        <GripVertical />
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </ScrollArea>
+            </>
+          )}
         </CardContent>
         <CardFooter className="flex justify-between items-center">
           <Button
