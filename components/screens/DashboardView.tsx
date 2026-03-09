@@ -313,6 +313,10 @@ export default function DashboardView({
   //   })().catch(() => {});
   // }, [authorizedFetch, selectedUnitId, selectedWeek]);
 
+  const visibleUnits = selectedUnitId
+    ? units.filter((unit) => unit.unit_id === selectedUnitId)
+    : units;
+
   return (
     <>
       <Card id="contentPanel" attr-class="hide" role="region" aria-live="polite">
@@ -333,7 +337,7 @@ export default function DashboardView({
               </TableRow>
             </TableHeader>
             <TableBody id="unitList">
-              {units.map((unit) => (
+              {visibleUnits.map((unit) => (
                 <TableRow
                   className="cursor-pointer unit-select"
                   key={unit.unit_id}
