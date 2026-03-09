@@ -2,6 +2,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { LoginResponse } from "@/types/Auth";
 import { loginRequest, logoutRequest, setShowPeerRequest } from "@/lib/authApi";
+import { flushLogger } from "@/lib/loggerFlushController";
 
 type LoginInput =
   | { type: "password"; username: string; password: string }
@@ -125,6 +126,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [selectedWeek, setSelectedWeek] = useState<string | null>(null);
   const [sessionID, setSessionID] = useState<string | null>(null);
 
+  const tokenRef = useRef<string | null>(null);
+  const expiresAtRef = useRef<number | null>(null);
+
   const clearExpiryTimer = () => {
     if (expiryTimer.current) {
       clearTimeout(expiryTimer.current);
@@ -154,6 +158,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setLoginResponse(stored as LoginResponse);
         setExpiresAt(exp);
         syncTokenToExtension(stored.token, exp, stored.user ?? null);
+
+        tokenRef.current = stored.token;
+        expiresAtRef.current = exp;
+
         scheduleExpiry(exp);
       } else {
         writeStored(null);
@@ -168,6 +176,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const doLogout = () => {
     clearExpiryTimer();
+
+    tokenRef.current = null;
+    expiresAtRef.current = null;
+
     syncTokenToExtension(null, null, null);
     setToken(null);
     setUser(null);
@@ -195,6 +207,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           : { idToken: input.idToken }
       );
       const exp = Math.floor(data.expires_at); // backend provides epoch ms (can be fractional)
+
+      tokenRef.current = data.token;
+      expiresAtRef.current = exp;
+
       setToken(data.token);
       setUser(data.user);
       setLoginResponse(data);
@@ -216,8 +232,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      if (token) {
-        await logoutRequest(token);
+      const currentToken = tokenRef.current;
+
+      await flushLogger(true); // 🔥 flush logs first
+
+      if (currentToken) {
+        await logoutRequest(currentToken);
       }
     } catch (error) {
       console.error("Logout failed:", error);
@@ -228,12 +248,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const authorizedFetch = useCallback(
     async (input: RequestInfo | URL, init?: RequestInit) => {
-      if (!token || !expiresAt || Date.now() >= expiresAt) {
+
+      const currentToken = tokenRef.current;
+      const currentExpires = expiresAtRef.current;
+
+      if (!currentToken || !currentExpires || Date.now() >= currentExpires) {
         // expired or missing → behave like 401
         return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
       }
       const headers = new Headers(init?.headers || {});
-      headers.set("Authorization", `Bearer ${token}`);
+      headers.set("Authorization", `Bearer ${currentToken}`);
       // default JSON content-type if body is object
       const body = init?.body;
       if (body && typeof body === "object" && !(body instanceof FormData)) {
@@ -241,12 +265,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       const res = await fetch(input, { ...init, headers });
       if (res.status === 401 || res.status === 403) {
-        // token no longer valid on server → force logout
-        // doLogout();
+
       }
       return res;
     },
-    [token, expiresAt]
+    []
   );
 
   const switchShowPeerRequest = async (value: boolean) => {

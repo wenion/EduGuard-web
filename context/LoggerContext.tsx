@@ -13,6 +13,7 @@ import {
 import type { Trace } from "@/types/Trace";
 import { sendLog } from "@/lib/authApi";
 import { useAuth } from "@/context/AuthContext";
+import { registerLoggerFlush } from "@/lib/loggerFlushController";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE!;
 
@@ -123,6 +124,10 @@ export function LoggerProvider({ children }: { children: ReactNode }) {
     },
     [authorizedFetch, endpoint, batchSize, isAuthenticated]
   );
+
+  useEffect(() => {
+    registerLoggerFlush(flush);
+  }, [flush]);
 
   /* ------------------------------ logEvent ------------------------------ */
   const logEvent = useCallback(
